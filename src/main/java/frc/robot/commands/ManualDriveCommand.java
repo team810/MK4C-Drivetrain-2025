@@ -17,7 +17,7 @@ import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 /**
  * This is driving from always blue
  */
-public class TelopDriveCommand extends Command {
+public class ManualDriveCommand extends Command {
     private final SlewRateLimiter xLimiter;
     private final SlewRateLimiter yLimiter;
     private final SlewRateLimiter omegaLimiter;
@@ -33,7 +33,7 @@ public class TelopDriveCommand extends Command {
     }
     yawControl control;
 
-    public TelopDriveCommand() {
+    public ManualDriveCommand() {
         xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
         yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
         omegaLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_ANGULAR_ACCELERATION);
