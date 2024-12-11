@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
@@ -14,8 +15,10 @@ import frc.robot.Superstructure;
 import frc.robot.subsystems.drivetrain.DrivetrainConstants;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 
+import java.util.ArrayList;
+
 /**
- * This is driving from always blue
+ *  This command is always running while in teleop
  */
 public class ManualDriveCommand extends Command {
     private final SlewRateLimiter xLimiter;
@@ -25,13 +28,12 @@ public class ManualDriveCommand extends Command {
     private boolean hasBeenZero = true;
     private Rotation2d lockedHeading = new Rotation2d();
 
-    public enum yawControl
-    {
+    public enum yawControl{
         omega,
-        rightStick,
         target,
     }
-    yawControl control;
+
+    private yawControl control;
 
     public ManualDriveCommand() {
         xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
@@ -49,16 +51,8 @@ public class ManualDriveCommand extends Command {
         {
             control = yawControl.target;
         }else{
-            if (IO.getButtonValue(Controls.thetaOmegaToggle).getAsBoolean()) {
-                if (control == yawControl.omega)
-                {
-                    control = yawControl.rightStick;
-                }else {
-                    control = yawControl.omega;
-                }
-            }
+            control = yawControl.omega;
         }
-
 
         double verticalVelocity;
         double horizontalVelocity;
@@ -75,8 +69,8 @@ public class ManualDriveCommand extends Command {
         horizontalVelocity = horizontalVelocity * invert;
         verticalVelocity = verticalVelocity * invert;
 
-        horizontalVelocity = MathUtil.applyDeadband(horizontalVelocity, .05);
-        verticalVelocity = MathUtil.applyDeadband(verticalVelocity, .05);
+        horizontalVelocity = MathUtil.applyDeadband(horizontalVelocity, .1);
+        verticalVelocity = MathUtil.applyDeadband(verticalVelocity, .1);
 
         verticalVelocity = verticalVelocity * DrivetrainConstants.MAX_VELOCITY;
         horizontalVelocity = horizontalVelocity * DrivetrainConstants.MAX_VELOCITY;
@@ -101,8 +95,7 @@ public class ManualDriveCommand extends Command {
 
                 if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 10) {
                     DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityThetaControlFOC);
-
-                    DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity, lockedHeading);
+                    DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity, lockedHeading,true);
                 }else{
                     omegaVelocity = omegaVelocity * DrivetrainConstants.MAX_ANGULAR_VELOCITY;
                     omegaVelocity = omegaLimiter.calculate(omegaVelocity);
@@ -114,24 +107,28 @@ public class ManualDriveCommand extends Command {
                     DrivetrainSubsystem.getInstance().setVelocityFOC(targetSpeeds);
                 }
             }
-            case rightStick -> {
-                DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityThetaControlFOC);
-                double xThetaInput = -MathUtil.applyDeadband(IO.getJoystickValue(Controls.driveThetaX).get(), .4);
-                double yThetaInput = -MathUtil.applyDeadband(IO.getJoystickValue(Controls.driveThetaY).get(), .4);
-                Rotation2d targetRot = new Rotation2d(xThetaInput,yThetaInput);
-                if (xThetaInput == 0 && yThetaInput == 0)
-                {
-                    targetRot = DrivetrainSubsystem.getInstance().getPose().getRotation();
-                }
-
-                DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity,targetRot);
-            }
             case target -> {
-                
+            
+                // This will be alliance specific points
+                ArrayList<Pose2d> landMarks = new ArrayList<>();
+                landMarks.add(new Pose2d(0,0,new Rotation2d()));
+                landMarks.add(new Pose2d(0,3.048,new Rotation2d()));
+                // landMarks.add(new Pose2d(2.67,1.17,new Rotation2d()));
+
+                Pose2d currentPose;
+                currentPose = DrivetrainSubsystem.getInstance().getPose();
+                Pose2d closetPose = currentPose.nearest(landMarks);
+
+                double xDistance = currentPose.getX() - closetPose.getX();
+                double yDistance = currentPose.getY() - closetPose.getY();
+                double theta = Math.atan2(-yDistance,-xDistance);
+
+                DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityThetaControlFOC);
+                DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity,Rotation2d.fromRadians(theta),false);
             }
         }
-
     }
+
 
     @Override
     public boolean isFinished() {

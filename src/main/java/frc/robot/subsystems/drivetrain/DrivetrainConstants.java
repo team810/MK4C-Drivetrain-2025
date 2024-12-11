@@ -10,7 +10,15 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.Robot;
+
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
 
 public class DrivetrainConstants {
     public final static String CAN_BUS = "drivetrain";
@@ -243,19 +251,16 @@ public class DrivetrainConstants {
 
         config.voltageCompensation(12);
         config.smartCurrentLimit(20);
-        config.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        config.idleMode(SparkBaseConfig.IdleMode.kCoast);
 
         return config;
     }
 
     public static Pigeon2Configuration getGyroConfig() {
         Pigeon2Configuration config = new Pigeon2Configuration();
-        if (Robot.isSimulation()) {
-            config.MountPose.MountPoseYaw = 180;
-        }
-
         return config;
     }
 
-
+    public static Measure<DistanceUnit> INTERLOPE_TOLERANCE = Distance.ofBaseUnits(.05, Meters);
+    public static Measure<AngleUnit> INTERLOPE_ANGlE_TOLERANCE = Angle.ofBaseUnits(3,Degrees);
 }

@@ -3,6 +3,7 @@ package frc.robot.IO;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.Robot;
 
 import java.util.HashMap;
 import java.util.function.BooleanSupplier;
@@ -36,11 +37,15 @@ public abstract class IO {
 
                 controlsJoystick.put(Controls.driveThetaX, primary::getRightY);
                 controlsJoystick.put(Controls.driveThetaY, primary::getRightX);
-
-                controlsButtons.put(Controls.thetaOmegaToggle, primary::getRightStickButtonPressed);
                 controlsButtons.put(Controls.resetGyro,primary::getAButton);
 
-                controlsButtons.put(Controls.yawLock, () -> primary.getRightTriggerAxis() > .8);
+                if (Robot.isReal()) {
+                    controlsButtons.put(Controls.yawLock,() -> primary.getRightTriggerAxis() > .8);    
+                }else{
+                    controlsButtons.put(Controls.yawLock,() -> primary.getRawButton(2));
+                }
+                
+                
                 break;
         }
 
@@ -62,8 +67,7 @@ public abstract class IO {
         return controlsButtons.get(control);
     }
 
-    public static double getDPadPrimary()
-    {
+    public static double getDPadPrimary() {
         return primary.getPOV();
     }
 

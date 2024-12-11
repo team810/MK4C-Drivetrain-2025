@@ -7,7 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardContainer;
@@ -16,12 +16,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.commands.TelopDriveCommand;
+import frc.robot.commands.ManualDriveCommand;
 import frc.robot.subsystems.drivetrain.DrivetrainConstants;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
     public static final double PERIOD = .025;
@@ -51,7 +52,7 @@ public class Robot extends LoggedRobot {
         
         if (isReal()) {
             Logger.addDataReceiver(new NT4Publisher());
-//            Logger.addDataReceiver(new WPILOGWriter());
+            Logger.addDataReceiver(new WPILOGWriter());
         } else {
             Logger.addDataReceiver(new NT4Publisher());
         }
@@ -97,8 +98,7 @@ public class Robot extends LoggedRobot {
                     yPosition = yPosition + (DrivetrainConstants.DRIVETRAIN_LENGTH/2);
                 }
                 case center -> {
-                    xPosition = xPosition; // Do not change
-                    yPosition = yPosition; // Do not change
+                    // Do not change 
                 }
             }
 
@@ -144,7 +144,7 @@ public class Robot extends LoggedRobot {
     
     @Override
     public void teleopInit() {
-        CommandScheduler.getInstance().schedule(new TelopDriveCommand());
+        CommandScheduler.getInstance().schedule(new ManualDriveCommand());
     }
     
     
@@ -159,6 +159,9 @@ public class Robot extends LoggedRobot {
     
     @Override
     public void disabledPeriodic() {
+        if (!DriverStation.getJoystickIsXbox(0)) {
+            System.out.println("Controller Ports Wrong\n");
+        }
         Logger.recordOutput("Reset Pose", new Pose2d(xPositionEntry.getDouble(0),yPositionEntry.getDouble(0),Rotation2d.fromRadians(thetaEntry.getDouble(0))));
         Superstructure.getInstance().disabledPeriodic();
     }

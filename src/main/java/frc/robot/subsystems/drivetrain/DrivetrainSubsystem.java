@@ -5,6 +5,7 @@ import com.ctre.phoenix6.sim.Pigeon2SimState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -137,10 +138,11 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
                 if(!reject)
                 {
                     visionPose = mt2.pose;
-                    visionPose = new Pose2d(
-                            visionPose.getX(),
-                            visionPose.getY(),
-                            visionPose.getRotation().minus(Rotation2d.fromDegrees(getRate().in(edu.wpi.first.units.Units.DegreesPerSecond)/(Logger.getTimestamp()-mt2.timestampSeconds))));
+                    
+                    // visionPose = new Pose2d(
+                    //         visionPose.getX(),
+                    //         visionPose.getY(),
+                    //         visionPose.getRotation().minus(Rotation2d.fromDegrees(getRate().in(edu.wpi.first.units.Units.DegreesPerSecond)/(Logger.getTimestamp()-mt2.timestampSeconds))));
                     odometry.addVisionMeasurement(visionPose, mt2.timestampSeconds);
                 }
             }
@@ -194,7 +196,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
         if (Robot.isSimulation())
         {
-            gyroSimState.addYaw(Units.radiansToDegrees(kinematics.toChassisSpeeds(frontLeft.getCurrentState(),frontRight.getCurrentState(),backLeft.getCurrentState(),backRight.getCurrentState()).omegaRadiansPerSecond * Robot.PERIOD));
+            gyroSimState.addYaw(-Units.radiansToDegrees(kinematics.toChassisSpeeds(frontLeft.getCurrentState(),frontRight.getCurrentState(),backLeft.getCurrentState(),backRight.getCurrentState()).omegaRadiansPerSecond * Robot.PERIOD));
         }
     
         frontLeft.moduleSim();
@@ -248,8 +250,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         this.velocityFOC = targetSpeed;
     }
 
-    public void setVelocityThetaControlFOC(double horizontalSpeed, double verticalSpeed, Rotation2d targetAngle) {
-        velocityThetaControlFOC.setControl(horizontalSpeed, verticalSpeed, targetAngle);
+    public void setVelocityThetaControlFOC(double horizontalSpeed, double verticalSpeed, Rotation2d targetAngle, boolean isAutoLock) {
+        velocityThetaControlFOC.setControl(horizontalSpeed, verticalSpeed, targetAngle, isAutoLock);
     }
 
     public ChassisSpeeds getVelocityRR() {
@@ -262,42 +264,51 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
     private static class VelocityThetaControlFOC {
         private final PIDController thetaController;
+        private final SlewRateLimiter limiter = new SlewRateLimiter(10);
         private double horizontalSpeed = 0;
         private double verticalSpeed = 0;
         private Rotation2d targetAngle = new Rotation2d();
 
+        private boolean isThetaLock;
+
         public VelocityThetaControlFOC() {
             thetaController = new PIDController(
-                    0,
+                    5,
                     0,
                     0
             );
             thetaController.enableContinuousInput(-Math.PI, Math.PI);
-            thetaController.setTolerance(Math.toRadians(3));
+            thetaController.setTolerance(Math.toRadians(1));
+            isThetaLock = false;
         }
 
-        public void setControl(double horizontalSpeed, double verticalSpeed, Rotation2d targetAngle) {
+        public void setControl(double horizontalSpeed, double verticalSpeed, Rotation2d targetAngle, boolean isThetaLock) {
             this.horizontalSpeed = horizontalSpeed;
             this.verticalSpeed = verticalSpeed;
             this.targetAngle = targetAngle;
+            this.isThetaLock = isThetaLock;
         }
         public ChassisSpeeds getTargetSpeeds(Rotation2d currentAngle) {
-            double omega = -thetaController.calculate(currentAngle.getRadians(), targetAngle.getRadians());
+            
+            double omega = thetaController.calculate(currentAngle.getRadians(), targetAngle.getRadians());
             omega = MathUtil.clamp(omega, -10,10);
-            omega = MathUtil.applyDeadband(omega,.1);
-            if (horizontalSpeed == 0 && verticalSpeed == 0) {
+            omega = MathUtil.applyDeadband(omega,.05);
+            omega = limiter.calculate(omega);
+            if (isThetaLock && horizontalSpeed == 0 && verticalSpeed == 0) {
                 omega = 0;
             }
             ChassisSpeeds speeds = new ChassisSpeeds(horizontalSpeed, verticalSpeed, omega);;
             speeds.toRobotRelativeSpeeds(currentAngle);
             return speeds;
         }
+
     }
 
     public enum ControlMethods {
         off,
         VelocityFOC, // Velocity control filed relative
         VelocityRR, // Velocity control robot relative
+        Trajectory, 
         VelocityThetaControlFOC,
     }
 
