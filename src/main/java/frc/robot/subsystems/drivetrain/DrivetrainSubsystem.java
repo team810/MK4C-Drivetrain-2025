@@ -8,6 +8,7 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -148,6 +149,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             }
         }
 
+
         Logger.recordOutput("VisionPose", visionPose);
 
         Logger.recordOutput("Drivetrain/Current/CurrentState", frontLeft.getCurrentState(), frontRight.getCurrentState(), backLeft.getCurrentState(), backRight.getCurrentState());
@@ -173,9 +175,9 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(targetSpeed);
 
         states[0].optimize(Rotation2d.fromRadians(frontLeft.getTheta().in(Radians)));
-        states[1].optimize(Rotation2d.fromRadians(frontLeft.getTheta().in(Radians)));
-        states[2].optimize(Rotation2d.fromRadians(frontLeft.getTheta().in(Radians)));
-        states[3].optimize(Rotation2d.fromRadians(frontLeft.getTheta().in(Radians)));
+        states[1].optimize(Rotation2d.fromRadians(frontRight.getTheta().in(Radians)));
+        states[2].optimize(Rotation2d.fromRadians(backLeft.getTheta().in(Radians)));
+        states[3].optimize(Rotation2d.fromRadians(backRight.getTheta().in(Radians)));
 
         frontLeft.setTargetState(states[0]);
         frontRight.setTargetState(states[1]);
@@ -254,6 +256,12 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         velocityThetaControlFOC.setControl(horizontalSpeed, verticalSpeed, targetAngle, isAutoLock);
     }
 
+    /**
+     * @return The current classifieds calculated from sensor data
+     */
+    public ChassisSpeeds getCurrentSpeeds() {
+        return kinematics.toChassisSpeeds(frontLeft.getCurrentState(), frontRight.getCurrentState(), backLeft.getCurrentState(), backRight.getCurrentState());
+    }
     public ChassisSpeeds getVelocityRR() {
         return velocityRR;
     }
@@ -308,7 +316,6 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         off,
         VelocityFOC, // Velocity control filed relative
         VelocityRR, // Velocity control robot relative
-        Trajectory, 
         VelocityThetaControlFOC,
     }
 

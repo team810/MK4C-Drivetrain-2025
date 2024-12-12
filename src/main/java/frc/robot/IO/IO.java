@@ -44,6 +44,8 @@ public abstract class IO {
                 }else{
                     controlsButtons.put(Controls.yawLock,() -> primary.getRawButton(2));
                 }
+
+                controlsButtons.put(Controls.gpLock, () -> primary.getLeftTriggerAxis() > .8);
                 
                 
                 break;

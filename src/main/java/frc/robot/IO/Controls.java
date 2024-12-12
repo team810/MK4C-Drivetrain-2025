@@ -10,4 +10,5 @@ public enum Controls {
     
     resetGyro,
     yawLock,
+    gpLock,
 }

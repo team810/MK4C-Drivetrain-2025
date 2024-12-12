@@ -1,10 +1,14 @@
 package frc.robot.commands.auto;
 
 import choreo.trajectory.SwerveSample;
-import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drivetrain.DrivetrainConstants;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
@@ -16,16 +20,15 @@ public class Interlope extends Command {
 
     private Pose2d currentPose;
     private final SwerveSample target;
-
-    private final PIDController xController;
-    private final PIDController yController;
-    private final PIDController thetaController;
+    private final HolonomicDriveController controller;
 
     public Interlope(SwerveSample target) {
         this.target = target;
-        xController = new PIDController(0, 0, 0);
-        yController = new PIDController(0, 0, 0);
-        thetaController = new PIDController(0, 0, 0);
+        controller = new HolonomicDriveController(
+    new PIDController(0,0,0),
+    new PIDController(0,0,0),
+new ProfiledPIDController(0,0,0,new TrapezoidProfile.Constraints(5,10))
+        );
     }
 
     @Override
@@ -35,7 +38,7 @@ public class Interlope extends Command {
 
     @Override
     public void execute() {
-        
+
     }
 
     @Override
