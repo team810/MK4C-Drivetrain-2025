@@ -170,8 +170,8 @@ public class DrivetrainConstants {
                 velocityControllerConfig.kV = 0.124146;
                 velocityControllerConfig.kA = 0;
                 velocityControllerConfig.kG = 0;
-                velocityControllerConfig.kS = .11;
-                velocityControllerConfig.kP = .05;
+                velocityControllerConfig.kS = .0;
+                velocityControllerConfig.kP = .0;
                 velocityControllerConfig.kI = 0;
                 velocityControllerConfig.kD = 0;
             }
@@ -179,8 +179,8 @@ public class DrivetrainConstants {
                 velocityControllerConfig.kV = 0.124146;
                 velocityControllerConfig.kA = 0;
                 velocityControllerConfig.kG = 0;
-                velocityControllerConfig.kS = .05;
-                velocityControllerConfig.kP = .1;
+                velocityControllerConfig.kS = .0;
+                velocityControllerConfig.kP = .0;
                 velocityControllerConfig.kI = 0;
                 velocityControllerConfig.kD = 0;
             }
@@ -188,8 +188,8 @@ public class DrivetrainConstants {
                 velocityControllerConfig.kV = 0.124146;
                 velocityControllerConfig.kA = 0;
                 velocityControllerConfig.kG = 0;
-                velocityControllerConfig.kS = .11;
-                velocityControllerConfig.kP = .05;
+                velocityControllerConfig.kS = .0;
+                velocityControllerConfig.kP = .0;
                 velocityControllerConfig.kI = 0;
                 velocityControllerConfig.kD = 0;
             }
@@ -197,8 +197,8 @@ public class DrivetrainConstants {
                 velocityControllerConfig.kV = 0.124146;
                 velocityControllerConfig.kA = 0;
                 velocityControllerConfig.kG = 0;
-                velocityControllerConfig.kS = .05;
-                velocityControllerConfig.kP = .1;
+                velocityControllerConfig.kS = .0;
+                velocityControllerConfig.kP = .0;
                 velocityControllerConfig.kI = 0;
                 velocityControllerConfig.kD = 0;
             }

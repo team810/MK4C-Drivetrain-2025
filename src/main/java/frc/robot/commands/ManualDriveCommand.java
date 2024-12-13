@@ -49,13 +49,13 @@ public class ManualDriveCommand extends Command {
         yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
         omegaLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_ANGULAR_ACCELERATION);
 
-        xController = new PIDController(.05, 0, 0);
-        yController = new PIDController(.05, 0, 0);
+        xController = new PIDController(.07, 0, 0);
+        yController = new PIDController(.07, 0, 0);
         xController.setTolerance(.4);
         yController.setTolerance(.4);
 
-        xLimiterGP = new SlewRateLimiter(8);
-        yLimiterGP = new SlewRateLimiter(8);
+        xLimiterGP = new SlewRateLimiter(5);
+        yLimiterGP = new SlewRateLimiter(5);
 
         control = yawControl.omega;
 
@@ -64,7 +64,6 @@ public class ManualDriveCommand extends Command {
 
     @Override
     public void execute() {
-        System.out.print("Brother");
         if (!IO.getButtonValue(Controls.gpLock).getAsBoolean()) {
 
             if (IO.getButtonValue(Controls.yawLock).getAsBoolean()){
