@@ -5,8 +5,6 @@ public enum Controls {
     driveYVelocity,
 
     driveOmega,
-    driveThetaX,
-    driveThetaY,
     
     resetGyro,
     yawLock,

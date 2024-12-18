@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.IO.Controls;
 import frc.robot.IO.IO;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class Superstructure {
     private static Superstructure instance;
@@ -20,6 +21,7 @@ public class Superstructure {
     public void initialize() {
         IO.Initialize(IO.PrimaryDriverProfiles.Leo,IO.SecondaryDriverProfiles.KnollController);
         DrivetrainSubsystem.getInstance();
+        VisionSubsystem.getInstance();
     }
 
     public void configureActions() {

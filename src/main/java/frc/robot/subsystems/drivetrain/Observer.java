@@ -121,7 +121,7 @@ public class Observer extends Thread {
         yawSignal = yaw;
         // The can bus is at 50% usage at 500 hz, should be able to go up to 800
         BaseStatusSignal.setUpdateFrequencyForAll(
-                400,
+                500,
                 frontLeftSignals.positionSignal,
                 frontLeftSignals.velocitySignal,
                 frontLeftSignals.accelerationSignal,
@@ -161,7 +161,7 @@ public class Observer extends Thread {
     public void run() {
         while (true) {
             BaseStatusSignal.waitForAll(
-                    1,
+                    2,
                     frontLeftSignals.positionSignal,
                     frontLeftSignals.velocitySignal,
                     frontLeftSignals.accelerationSignal,
@@ -222,6 +222,12 @@ public class Observer extends Thread {
             observationsLock.writeLock().unlock();
             moduleObservationLock.readLock().unlock();
             yawLock.readLock().unlock();
+
+//            try {
+//                Thread.sleep(2);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
         }
     }
 

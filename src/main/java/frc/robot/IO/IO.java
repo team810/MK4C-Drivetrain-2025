@@ -7,6 +7,7 @@ import frc.robot.Robot;
 
 import java.util.HashMap;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public abstract class IO {
@@ -22,7 +23,7 @@ public abstract class IO {
     private static final XboxController secondary = new XboxController(1);
     private static final Joystick secondaryJoystick  = new Joystick(1);
 
-    private static final HashMap<Controls, Supplier<Double>> controlsJoystick = new HashMap<>();
+    private static final HashMap<Controls, DoubleSupplier> controlsJoystick = new HashMap<>();
     private static final HashMap<Controls, BooleanSupplier> controlsButtons = new HashMap<>();
 
     public static void Initialize(PrimaryDriverProfiles primaryProfile, SecondaryDriverProfiles secondaryProfile) {
@@ -34,17 +35,14 @@ public abstract class IO {
                 controlsJoystick.put(Controls.driveXVelocity, primary::getLeftX);
                 controlsJoystick.put(Controls.driveYVelocity, primary::getLeftY);
                 controlsJoystick.put(Controls.driveOmega, primary::getRightX);
-
-                controlsJoystick.put(Controls.driveThetaX, primary::getRightY);
-                controlsJoystick.put(Controls.driveThetaY, primary::getRightX);
                 controlsButtons.put(Controls.resetGyro,primary::getAButton);
 
-                if (Robot.isReal()) {
-                    controlsButtons.put(Controls.yawLock,() -> primary.getRightTriggerAxis() > .8);    
-                }else{
-                    controlsButtons.put(Controls.yawLock,() -> primary.getRawButton(2));
-                }
-
+//                if (Robot.isReal()) {
+//
+//                }else{
+//                    controlsButtons.put(Controls.yawLock,() -> primary.getRawButton(2));
+//                }
+                controlsButtons.put(Controls.yawLock,() -> primary.getRightTriggerAxis() > .8);
                 controlsButtons.put(Controls.gpLock, () -> primary.getLeftTriggerAxis() > .8);
                 
                 
@@ -61,7 +59,7 @@ public abstract class IO {
         }
     }
 
-    public static Supplier<Double> getJoystickValue(Controls control) {
+    public static DoubleSupplier getJoystickValue(Controls control) {
         return controlsJoystick.get(control);
     }
 

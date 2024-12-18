@@ -17,6 +17,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Robot;
 import frc.robot.Superstructure;
 import frc.robot.lib.AdvancedSubsystem;
@@ -184,10 +185,14 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         backLeft.setTargetState(states[2]);
         backRight.setTargetState(states[3]);
 
+
+
         frontLeft.writePeriodic();
         frontRight.writePeriodic();
         backLeft.writePeriodic();
         backRight.writePeriodic();
+
+
 
         Logger.recordOutput("Drivetrain/Applied/Speeds",targetSpeed);
         Logger.recordOutput("Drivetrain/Applied/States",states);
@@ -198,7 +203,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
         if (Robot.isSimulation())
         {
-            gyroSimState.addYaw(-Units.radiansToDegrees(kinematics.toChassisSpeeds(frontLeft.getCurrentState(),frontRight.getCurrentState(),backLeft.getCurrentState(),backRight.getCurrentState()).omegaRadiansPerSecond * Robot.PERIOD));
+            gyroSimState.addYaw(Units.radiansToDegrees(kinematics.toChassisSpeeds(frontLeft.getCurrentState(),frontRight.getCurrentState(),backLeft.getCurrentState(),backRight.getCurrentState()).omegaRadiansPerSecond * Robot.PERIOD));
         }
     
         frontLeft.moduleSim();
@@ -272,7 +277,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
     private static class VelocityThetaControlFOC {
         private final PIDController thetaController;
-        private final SlewRateLimiter limiter = new SlewRateLimiter(10);
+        private final SlewRateLimiter limiter = new SlewRateLimiter(15);
         private double horizontalSpeed = 0;
         private double verticalSpeed = 0;
         private Rotation2d targetAngle = new Rotation2d();
@@ -286,7 +291,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
                     0
             );
             thetaController.enableContinuousInput(-Math.PI, Math.PI);
-            thetaController.setTolerance(Math.toRadians(1));
+            thetaController.setTolerance(Math.toRadians(.01));
             isThetaLock = false;
         }
 
@@ -297,16 +302,15 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             this.isThetaLock = isThetaLock;
         }
         public ChassisSpeeds getTargetSpeeds(Rotation2d currentAngle) {
-            
             double omega = thetaController.calculate(currentAngle.getRadians(), targetAngle.getRadians());
             omega = MathUtil.clamp(omega, -10,10);
             omega = MathUtil.applyDeadband(omega,.05);
-            omega = limiter.calculate(omega);
+//            omega = limiter.calculate(omega);
             if (isThetaLock && horizontalSpeed == 0 && verticalSpeed == 0) {
                 omega = 0;
             }
             ChassisSpeeds speeds = new ChassisSpeeds(horizontalSpeed, verticalSpeed, omega);;
-            speeds.toRobotRelativeSpeeds(currentAngle);
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, currentAngle);
             return speeds;
         }
 
