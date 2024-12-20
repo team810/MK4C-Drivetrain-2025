@@ -13,12 +13,11 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.Timer;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
-
 import java.util.ArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static edu.wpi.first.units.Units.*;
 
 public class Observer extends Thread {
     private final ArrayList<SwerveObservation> observations;
@@ -70,7 +69,15 @@ public class Observer extends Thread {
         public Measure<AngleUnit> theta;
         public Measure<AngularVelocityUnit> omega;
 
-        public ModuleObservationRaw() {}
+        public ModuleObservationRaw() {
+            position = Angle.ofBaseUnits(0,Radians);
+            velocity = AngularVelocity.ofBaseUnits(0, RadiansPerSecond);
+            acceleration = AngularAcceleration.ofBaseUnits(0, RadiansPerSecondPerSecond);
+            current = Current.ofBaseUnits(0,Amps);
+            appliedVoltage = Voltage.ofBaseUnits(0, Volts);
+            theta = Angle.ofBaseUnits(0,Radians);
+            omega = AngularVelocity.ofBaseUnits(0, RadiansPerSecond);
+        }
     }
 
     public static class ModuleSignals

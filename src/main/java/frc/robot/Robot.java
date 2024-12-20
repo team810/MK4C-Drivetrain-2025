@@ -2,16 +2,25 @@
 package frc.robot;
 
 
+import choreo.Choreo;
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
+import choreo.util.ChoreoAlert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.ManualDriveCommand;
+import frc.robot.commands.auto.FollowTrajectory;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import java.util.Optional;
 
 public class Robot extends LoggedRobot {
     public static final double PERIOD = .020;
@@ -49,11 +58,8 @@ public class Robot extends LoggedRobot {
 
     public void readPeriodic() {
 
-
         DrivetrainSubsystem.getInstance().readPeriodic();
         VisionSubsystem.getInstance().readPeriodic();
-
-
     }
 
     public void writePeriodic() {
@@ -64,11 +70,25 @@ public class Robot extends LoggedRobot {
     }
     
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+
+        Optional<Trajectory<SwerveSample>> path = Choreo.loadTrajectory("test");
+        if (path.isEmpty()) {
+            System.out.println("not found");
+        }
+        CommandScheduler.getInstance().schedule(
+                new SequentialCommandGroup(
+                        new InstantCommand(() -> DrivetrainSubsystem.getInstance().resetPose(path.get().getInitialPose(false).get())),
+                        new FollowTrajectory(path.get())
+                )
+        );
+    }
     
     
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+
+    }
     
     
     @Override

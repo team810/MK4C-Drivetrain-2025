@@ -5,6 +5,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -60,10 +61,10 @@ public class ManualDriveCommand extends Command {
         yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
         omegaLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_ANGULAR_ACCELERATION);
 
-        xController = new PIDController(.07, 0, 0);
-        yController = new PIDController(.07, 0, 0);
-        xController.setTolerance(.2);
-        yController.setTolerance(.2);
+        xController = new PIDController(4, 0, 0);
+        yController = new PIDController(4, 0, 0);
+        xController.setTolerance(.02);
+        yController.setTolerance(.02);
 
         xLimiterGP = new SlewRateLimiter(5);
         yLimiterGP = new SlewRateLimiter(5);
@@ -126,7 +127,7 @@ public class ManualDriveCommand extends Command {
                         hasBeenZero = false;
                     }
 
-                    if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 25) {
+                    if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 45) {
                         DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityThetaControlFOC);
                         DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity, lockedHeading,true);
                     }else{
@@ -135,7 +136,7 @@ public class ManualDriveCommand extends Command {
 
                         ChassisSpeeds targetSpeeds;
                         targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
-                        targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, DrivetrainSubsystem.getInstance().getPose().getRotation());
+                        targetSpeeds.toRobotRelativeSpeeds(DrivetrainSubsystem.getInstance().getPose().getRotation());
                         DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
                         DrivetrainSubsystem.getInstance().setVelocityFOC(targetSpeeds);
                     }
@@ -144,8 +145,8 @@ public class ManualDriveCommand extends Command {
                 
                     // This will be alliance specific points
                     ArrayList<Pose2d> landMarks = new ArrayList<>();
-                    landMarks.add(new Pose2d(0,0,new Rotation2d()));
-                    landMarks.add(new Pose2d(0,3.048,new Rotation2d()));
+                    landMarks.add(new Pose2d(0 ,5.554803371429443 ,new Rotation2d()));
+//                    landMarks.add(new Pose2d(0,3.048,new Rotation2d()));
                     // landMarks.add(new Pose2d(2.67,1.17,new Rotation2d()));
 
                     Pose2d currentPose;
@@ -162,20 +163,34 @@ public class ManualDriveCommand extends Command {
             }
         }else{
             if (VisionSubsystem.getInstance().isTargetDetected()) {
-                double currentX = VisionSubsystem.getInstance().getTargetX();
-                double currentY = VisionSubsystem.getInstance().getTargetY();
+                Transform2d transform2d = VisionSubsystem.getInstance().getTargetTransform();
 
-                double xOutput = -xController.calculate(currentX, 0);
-                double yOutput = yController.calculate(currentY, 0);
+                double xOutput = xController.calculate(transform2d.getX(), -.67);
+                double yOutput = yController.calculate(transform2d.getY(), 0);
 
                 xOutput = MathUtil.clamp(xOutput, -3,3);
                 yOutput = MathUtil.clamp(yOutput, -3,3);
 
-                xOutput = xLimiterGP.calculate(xOutput);
-                yOutput = yLimiterGP.calculate(yOutput);
+//                xOutput = xLimiterGP.calculate(xOutput);
+//                yOutput = yLimiterGP.calculate(yOutput);
 
-                DrivetrainSubsystem.getInstance().setVelocityRR(new ChassisSpeeds(yOutput, xOutput,0));
+                DrivetrainSubsystem.getInstance().setVelocityRR(new ChassisSpeeds(-xOutput, -yOutput,0));
                 DrivetrainSubsystem.getInstance().setControlMode(ControlMethods.VelocityRR);
+
+//                double currentX = VisionSubsystem.getInstance().getTargetX();
+//                double currentY = VisionSubsystem.getInstance().getTargetY();
+//
+//                double xOutput = -xController.calculate(currentX, 0);
+//                double yOutput = yController.calculate(currentY, 0);
+//
+//                xOutput = MathUtil.clamp(xOutput, -3,3);
+//                yOutput = MathUtil.clamp(yOutput, -3,3);
+//
+//                xOutput = xLimiterGP.calculate(xOutput);
+//                yOutput = yLimiterGP.calculate(yOutput);
+//
+//                DrivetrainSubsystem.getInstance().setVelocityRR(new ChassisSpeeds(yOutput, xOutput,0));
+//                DrivetrainSubsystem.getInstance().setControlMode(ControlMethods.VelocityRR);
             }
 
         }

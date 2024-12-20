@@ -126,30 +126,32 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
             LimelightHelpers.SetRobotOrientation(DrivetrainConstants.LIME_LIGHT_NAME, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
             LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue(DrivetrainConstants.LIME_LIGHT_NAME);
+            if (mt2.avgTagArea > .2) {
 
-            if (mt2 != null)
-            {
-                if(Math.abs(getRate().in(edu.wpi.first.units.Units.RadiansPerSecond)) > DrivetrainConstants.MAX_ANGULAR_VELOCITY_ACCEPT_VISION_DATA)
+                if (mt2 != null)
                 {
-                    reject = true;
-                }
-                if(mt2.tagCount == 0)
-                {
-                    reject = true;
-                }
-                if(!reject)
-                {
-                    visionPose = mt2.pose;
-                    
-                    // visionPose = new Pose2d(
-                    //         visionPose.getX(),
-                    //         visionPose.getY(),
-                    //         visionPose.getRotation().minus(Rotation2d.fromDegrees(getRate().in(edu.wpi.first.units.Units.DegreesPerSecond)/(Logger.getTimestamp()-mt2.timestampSeconds))));
-                    odometry.addVisionMeasurement(visionPose, mt2.timestampSeconds);
+                    if(Math.abs(getRate().in(edu.wpi.first.units.Units.RadiansPerSecond)) > DrivetrainConstants.MAX_ANGULAR_VELOCITY_ACCEPT_VISION_DATA)
+                    {
+                        reject = true;
+                    }
+                    if(mt2.tagCount == 0)
+                    {
+                        reject = true;
+                    }
+                    if(!reject)
+                    {
+                        visionPose = mt2.pose;
+
+//                         visionPose = new Pose2d(
+//                                 visionPose.getX(),
+//                                 visionPose.getY(),
+//                                 visionPose.getRotation().minus(Rotation2d.fromDegrees(getRate().in(edu.wpi.first.units.Units.DegreesPerSecond)/(Logger.getTimestamp()-mt2.timestampSeconds))));
+
+                        odometry.addVisionMeasurement(visionPose, mt2.timestampSeconds);
+                    }
                 }
             }
         }
-
 
         Logger.recordOutput("VisionPose", visionPose);
 
@@ -185,14 +187,10 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         backLeft.setTargetState(states[2]);
         backRight.setTargetState(states[3]);
 
-
-
         frontLeft.writePeriodic();
         frontRight.writePeriodic();
         backLeft.writePeriodic();
         backRight.writePeriodic();
-
-
 
         Logger.recordOutput("Drivetrain/Applied/Speeds",targetSpeed);
         Logger.recordOutput("Drivetrain/Applied/States",states);
@@ -216,8 +214,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         return gyro.getAngularVelocityZWorld().getValue();
     }
 
-    public Pose2d getPose()
-    {
+    public Pose2d getPose() {
         return odometry.getEstimatedPosition();
     }
 
@@ -286,7 +283,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
         public VelocityThetaControlFOC() {
             thetaController = new PIDController(
-                    5,
+                    10,
                     0,
                     0
             );
@@ -306,11 +303,11 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             omega = MathUtil.clamp(omega, -10,10);
             omega = MathUtil.applyDeadband(omega,.05);
 //            omega = limiter.calculate(omega);
-            if (isThetaLock && horizontalSpeed == 0 && verticalSpeed == 0) {
-                omega = 0;
-            }
-            ChassisSpeeds speeds = new ChassisSpeeds(horizontalSpeed, verticalSpeed, omega);;
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, currentAngle);
+//            if (isThetaLock && horizontalSpeed == 0 && verticalSpeed == 0) {
+//                omega = 0;
+//            }
+            ChassisSpeeds speeds = new ChassisSpeeds(horizontalSpeed, verticalSpeed, omega);
+            speeds.toRobotRelativeSpeeds(DrivetrainSubsystem.getInstance().getPose().getRotation());
             return speeds;
         }
 

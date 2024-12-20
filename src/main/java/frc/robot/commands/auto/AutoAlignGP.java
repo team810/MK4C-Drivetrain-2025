@@ -3,13 +3,13 @@ package frc.robot.commands.auto;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class AutoAlignGP extends Command {
-
     private final PIDController xController;
     private final PIDController yController;
 
@@ -24,11 +24,10 @@ public class AutoAlignGP extends Command {
     @Override
     public void execute() {
         if (VisionSubsystem.getInstance().isTargetDetected()) {
-            double currentX = VisionSubsystem.getInstance().getTargetX();
-            double currentY = VisionSubsystem.getInstance().getTargetY();
+            Transform2d transform2d = VisionSubsystem.getInstance().getTargetTransform();
 
-            double xOutput = -xController.calculate(currentX, 0);
-            double yOutput = yController.calculate(currentY, 0);
+            double xOutput = -xController.calculate(transform2d.getX(), -.67);
+            double yOutput = yController.calculate(transform2d.getY(), 0);
 
             xOutput = MathUtil.clamp(xOutput, -3,3);
             yOutput = MathUtil.clamp(yOutput, -3,3);

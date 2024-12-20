@@ -1,6 +1,8 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
@@ -9,6 +11,8 @@ import frc.robot.lib.AdvancedSubsystem;
 import frc.robot.lib.LimelightHelpers;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import org.littletonrobotics.junction.Logger;
+
+import java.util.ArrayList;
 
 public class VisionSubsystem extends AdvancedSubsystem {
     private static VisionSubsystem INSTANCE;
@@ -19,13 +23,16 @@ public class VisionSubsystem extends AdvancedSubsystem {
     private double targetY;
     private boolean targetDetected;
 
-    private final LinearFilter xFilter;
-    private final LinearFilter yFilter;
+    private final ArrayList<Pose2d> gpPoseList = new ArrayList<>();
+
+    private Transform2d targetTransform = new Transform2d();
+    private Pose2d targetPose = new Pose2d();
 
 
     public VisionSubsystem() {
-        xFilter = LinearFilter.movingAverage(1);
-        yFilter = LinearFilter.movingAverage(1);
+        gpPoseList.add(new Pose2d(2.8914051055908203  , 7.087372779846191  , new Rotation2d()));
+        gpPoseList.add(new Pose2d(2.8914051055908203 , 5.567087650299072 , new Rotation2d()));
+        gpPoseList.add(new Pose2d(2.8914051055908203 ,4.066293716430664 , new Rotation2d()));
     }
 
     @Override
@@ -36,22 +43,18 @@ public class VisionSubsystem extends AdvancedSubsystem {
                 targetX = LimelightHelpers.getTX(LL2);
                 targetY = LimelightHelpers.getTY(LL2);
 
-                double x = Units.inchesToMeters(20) * Math.tan(Math.toRadians(targetX));
-                double y = Units.inchesToMeters(20) * Math.tan(Math.toRadians(targetY) + Math.toRadians(-29.8));
-
-                Logger.recordOutput("GPLocation", DrivetrainSubsystem.getInstance().getPose().transformBy(new Transform2d(y, x, new Rotation2d())));
-
-//                targetX = xFilter.calculate(targetX);
-//                targetY = yFilter.calculate(targetY);
-            }else{
-                xFilter.reset();
-                yFilter.reset();
+                double x = (Units.inchesToMeters(20) * Math.tan(Math.toRadians(targetX)));
+                double y = (Units.inchesToMeters(20) * Math.tan(Math.toRadians(-targetY) + Math.toRadians(-29.8))) - Units.inchesToMeters(15);
+                targetTransform = new Transform2d(y, x, new Rotation2d());
+                targetPose = DrivetrainSubsystem.getInstance().getPose().transformBy(targetTransform);
             }
         }else{
             targetDetected = false;
             targetX = 0;
             targetY = 0;
         }
+        Logger.recordOutput("Vision/TargetTransform", targetTransform);
+        Logger.recordOutput("Vision/GPLocation", new Pose3d(targetPose));
     }
 
     @Override
@@ -61,9 +64,21 @@ public class VisionSubsystem extends AdvancedSubsystem {
 
     @Override
     public void simulatePeriodic() {
-         // Need to find the proportional value to make sim accurate.
-    }
+         targetDetected = true;
 
+        targetX = 0;
+        targetY = 0;
+
+        targetPose = DrivetrainSubsystem.getInstance().getPose().nearest(gpPoseList);
+        targetTransform = new Transform2d(DrivetrainSubsystem.getInstance().getPose(), targetPose);
+
+    }
+    public Transform2d getTargetTransform() {
+        return targetTransform;
+    }
+    public Pose2d getTargetPose() {
+        return targetPose;
+    }
     public double getTargetX() {
         return targetX;
     }
