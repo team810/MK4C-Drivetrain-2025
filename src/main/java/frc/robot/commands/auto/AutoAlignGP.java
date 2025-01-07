@@ -14,11 +14,11 @@ public class AutoAlignGP extends Command {
     private final PIDController yController;
 
     public AutoAlignGP() {
-        xController = new PIDController(0, 0, 0);
-        yController = new PIDController(0, 0, 0);
+        xController = new PIDController(4, 0, 0);
+        yController = new PIDController(4, 0, 0);
 
-        xController.setSetpoint(2);
-        yController.setSetpoint(2);
+        xController.setTolerance(.05);
+        yController.setTolerance(.05);
     }
 
     @Override
@@ -26,15 +26,16 @@ public class AutoAlignGP extends Command {
         if (VisionSubsystem.getInstance().isTargetDetected()) {
             Transform2d transform2d = VisionSubsystem.getInstance().getTargetTransform();
 
-            double xOutput = -xController.calculate(transform2d.getX(), -.67);
-            double yOutput = yController.calculate(transform2d.getY(), 0);
+            double xOutput = xController.calculate(transform2d.getX(), -edu.wpi.first.math.util.Units.inchesToMeters(18.5));
+            double yOutput = yController.calculate(transform2d.getY(), edu.wpi.first.math.util.Units.inchesToMeters(1.5));
 
-            xOutput = MathUtil.clamp(xOutput, -3,3);
-            yOutput = MathUtil.clamp(yOutput, -3,3);
+            xOutput = -MathUtil.clamp(xOutput, -3,3);
+            yOutput = -MathUtil.clamp(yOutput, -3,3);
 
-            DrivetrainSubsystem.getInstance().setVelocityRR(new ChassisSpeeds(yOutput, xOutput,0));
+            DrivetrainSubsystem.getInstance().setVelocityRR(new ChassisSpeeds(xOutput, yOutput,0));
             DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityRR);
         }
+        System.out.println((xController.atSetpoint() && yController.atSetpoint()));
     }
 
     @Override

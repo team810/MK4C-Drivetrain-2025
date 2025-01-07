@@ -7,6 +7,8 @@ public enum Controls {
     driveOmega,
     
     resetGyro,
-    yawLock,
-    gpLock,
+
+    leftAlign,
+    rightAlign,
+
 }

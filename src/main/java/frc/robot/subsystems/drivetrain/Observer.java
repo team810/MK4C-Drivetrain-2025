@@ -1,6 +1,7 @@
 package frc.robot.subsystems.drivetrain;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -104,6 +105,9 @@ public class Observer extends Thread {
     }
 
     public Observer(ModuleSignals frontLeft, ModuleSignals frontRight, ModuleSignals backLeft, ModuleSignals backRight, StatusSignal<Angle> yaw) {
+        CANBus drivetrainBus = new CANBus(DrivetrainConstants.CAN_BUS);
+        while (!drivetrainBus.getStatus().Status.isOK());
+
         observationsLock = new ReentrantReadWriteLock();
         observations = new ArrayList<>();
         observationsLock.writeLock().lock();

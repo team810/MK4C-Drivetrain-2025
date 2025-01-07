@@ -37,13 +37,15 @@ public abstract class IO {
                 controlsJoystick.put(Controls.driveOmega, primary::getRightX);
                 controlsButtons.put(Controls.resetGyro,primary::getAButton);
 
+
 //                if (Robot.isReal()) {
 //
 //                }else{
 //                    controlsButtons.put(Controls.yawLock,() -> primary.getRawButton(2));
 //                }
-                controlsButtons.put(Controls.yawLock,() -> primary.getRightTriggerAxis() > .8);
-                controlsButtons.put(Controls.gpLock, () -> primary.getLeftTriggerAxis() > .8);
+                controlsButtons.put(Controls.leftAlign,() -> primary.getLeftTriggerAxis() > .8);
+                controlsButtons.put(Controls.rightAlign, () -> primary.getRightTriggerAxis() > .8);
+
                 
                 
                 break;

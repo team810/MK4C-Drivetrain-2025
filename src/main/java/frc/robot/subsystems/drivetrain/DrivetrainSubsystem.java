@@ -2,13 +2,12 @@ package frc.robot.subsystems.drivetrain;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -17,12 +16,10 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Robot;
 import frc.robot.Superstructure;
 import frc.robot.lib.AdvancedSubsystem;
 import frc.robot.lib.LimelightHelpers;
-import org.littletonrobotics.junction.Logger;
 
 import java.util.ArrayList;
 
@@ -32,9 +29,13 @@ import static edu.wpi.first.units.Units.Radians;
 public class DrivetrainSubsystem extends AdvancedSubsystem {
     private static DrivetrainSubsystem instance;
 
+    @Logged (name = "Front Left Module")
     private final SwerveModuleIO frontLeft;
+    @Logged (name = "Front Right Module")
     private final SwerveModuleIO frontRight;
+    @Logged (name = "Back Left Module")
     private final SwerveModuleIO backLeft;
+    @Logged (name = "Back Right Module")
     private final SwerveModuleIO backRight;
 
     private final Pigeon2 gyro;
@@ -55,6 +56,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
     private Pose2d visionPose = new Pose2d();
 
     private DrivetrainSubsystem() {
+
         frontLeft = new KrakenNeoModule(SwerveModuleID.FrontLeft);
         frontRight = new KrakenNeoModule(SwerveModuleID.FrontRight);
         backLeft = new KrakenNeoModule(SwerveModuleID.BackLeft);
@@ -125,38 +127,27 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             boolean reject = false;
 
             LimelightHelpers.SetRobotOrientation(DrivetrainConstants.LIME_LIGHT_NAME, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
-            LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue(DrivetrainConstants.LIME_LIGHT_NAME);
-            if (mt2.avgTagArea > .2) {
+            LimelightHelpers.PoseEstimate results = LimelightHelpers.getBotPoseEstimate_wpiBlue(DrivetrainConstants.LIME_LIGHT_NAME);
+            if (results != null) {
 
-                if (mt2 != null)
+                if (results.avgTagArea > .2)
                 {
                     if(Math.abs(getRate().in(edu.wpi.first.units.Units.RadiansPerSecond)) > DrivetrainConstants.MAX_ANGULAR_VELOCITY_ACCEPT_VISION_DATA)
                     {
                         reject = true;
                     }
-                    if(mt2.tagCount == 0)
+                    if(results.tagCount == 0)
                     {
                         reject = true;
                     }
                     if(!reject)
                     {
-                        visionPose = mt2.pose;
-
-//                         visionPose = new Pose2d(
-//                                 visionPose.getX(),
-//                                 visionPose.getY(),
-//                                 visionPose.getRotation().minus(Rotation2d.fromDegrees(getRate().in(edu.wpi.first.units.Units.DegreesPerSecond)/(Logger.getTimestamp()-mt2.timestampSeconds))));
-
-                        odometry.addVisionMeasurement(visionPose, mt2.timestampSeconds);
+                        visionPose = results.pose;
+                        odometry.addVisionMeasurement(visionPose, results.timestampSeconds);
                     }
                 }
             }
         }
-
-        Logger.recordOutput("VisionPose", visionPose);
-
-        Logger.recordOutput("Drivetrain/Current/CurrentState", frontLeft.getCurrentState(), frontRight.getCurrentState(), backLeft.getCurrentState(), backRight.getCurrentState());
-        Logger.recordOutput("Drivetrain/Current/CurrentPose", odometry.getEstimatedPosition());
     }
 
     @Override
@@ -192,8 +183,9 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         backLeft.writePeriodic();
         backRight.writePeriodic();
 
-        Logger.recordOutput("Drivetrain/Applied/Speeds",targetSpeed);
-        Logger.recordOutput("Drivetrain/Applied/States",states);
+//        Logger.recordOutput("Drivetrain/Applied/Speeds",targetSpeed);
+
+//        Logger.recordOutput("Drivetrain/Applied/States",states);
     }
 
     @Override
@@ -214,6 +206,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         return gyro.getAngularVelocityZWorld().getValue();
     }
 
+    @Logged (name = "Robot Pose")
     public Pose2d getPose() {
         return odometry.getEstimatedPosition();
     }
@@ -274,7 +267,6 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
     private static class VelocityThetaControlFOC {
         private final PIDController thetaController;
-        private final SlewRateLimiter limiter = new SlewRateLimiter(15);
         private double horizontalSpeed = 0;
         private double verticalSpeed = 0;
         private Rotation2d targetAngle = new Rotation2d();
@@ -302,12 +294,11 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             double omega = thetaController.calculate(currentAngle.getRadians(), targetAngle.getRadians());
             omega = MathUtil.clamp(omega, -10,10);
             omega = MathUtil.applyDeadband(omega,.05);
-//            omega = limiter.calculate(omega);
 //            if (isThetaLock && horizontalSpeed == 0 && verticalSpeed == 0) {
 //                omega = 0;
 //            }
             ChassisSpeeds speeds = new ChassisSpeeds(horizontalSpeed, verticalSpeed, omega);
-            speeds.toRobotRelativeSpeeds(DrivetrainSubsystem.getInstance().getPose().getRotation());
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, DrivetrainSubsystem.getInstance().getPose().getRotation());
             return speeds;
         }
 

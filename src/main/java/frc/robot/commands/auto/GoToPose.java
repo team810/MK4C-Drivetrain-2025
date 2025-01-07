@@ -54,7 +54,8 @@ public class GoToPose extends Command {
 
         thetaOutput = MathUtil.clamp(thetaOutput, -6, 6); // clamped from -6 to 6
         ChassisSpeeds speeds = new ChassisSpeeds(xOutput,yOutput,thetaOutput);
-        speeds.toRobotRelativeSpeeds(DrivetrainSubsystem.getInstance().getPose().getRotation());
+        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, DrivetrainSubsystem.getInstance().getPose().getRotation());
+
         DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
         DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
     }

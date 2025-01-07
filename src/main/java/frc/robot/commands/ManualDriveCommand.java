@@ -1,30 +1,29 @@
 package frc.robot.commands;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.FiledConstants;
 import frc.robot.IO.Controls;
 import frc.robot.IO.IO;
-import frc.robot.lib.LimelightHelpers;
-import frc.robot.lib.LimelightHelpers.LimelightResults;
 import frc.robot.Superstructure;
 import frc.robot.subsystems.drivetrain.DrivetrainConstants;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
-import frc.robot.subsystems.drivetrain.DrivetrainSubsystem.ControlMethods;
-import frc.robot.subsystems.vision.VisionSubsystem;
+import org.w3c.dom.html.HTMLBaseFontElement;
 
+import javax.tools.Diagnostic;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 /**
  *  This command is always running while in teleop
@@ -34,60 +33,143 @@ public class ManualDriveCommand extends Command {
     private final SlewRateLimiter yLimiter;
     private final SlewRateLimiter omegaLimiter;
 
-    private final SlewRateLimiter xLimiterGP;
-    private final SlewRateLimiter yLimiterGP;
-    private final PIDController xController;
-    private final PIDController yController;
+    private final PIDController xAlignController;
+    private final PIDController yAlignController;
+    private final PIDController omegaAlignController;
 
     private final DoubleSupplier driveXVelocity;
     private final DoubleSupplier driveYVelocity;
     private final DoubleSupplier driveOmega;
 
-    private final BooleanSupplier gpLock;
-    private final BooleanSupplier yawLock;
+    private final BooleanSupplier leftAlign;
+    private final BooleanSupplier rightAlign;
 
     private boolean hasBeenZero = true;
     private Rotation2d lockedHeading = new Rotation2d();
 
-    public enum yawControl{
-        omega,
-        target,
-    }
+    private final ArrayList<Pose2d> reefSections = new ArrayList<>();
 
-    private yawControl control;
+    private final Pose2d F;
+    private final Pose2d F_LEFT;
+    private final Pose2d F_RIGHT;
+
+    private final Pose2d FL;
+    private final Pose2d FL_LEFT;
+    private final Pose2d FL_RIGHT;
+
+    private final Pose2d BL;
+    private final Pose2d BL_LEFT;
+    private final Pose2d BL_RIGHT;
+
+    private final Pose2d B;
+    private final Pose2d B_LEFT;
+    private final Pose2d B_RIGHT;
+
+    private final Pose2d BR;
+    private final Pose2d BR_LEFT;
+    private final Pose2d BR_RIGHT;
+
+    private final Pose2d FR;
+    private final Pose2d FR_LEFT;
+    private final Pose2d FR_RIGHT;
+
+    private Pose2d targetPose;
+    private boolean alignLastTick = false; // Was the code in align mode last tick
 
     public ManualDriveCommand() {
         xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
         yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
         omegaLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_ANGULAR_ACCELERATION);
 
-        xController = new PIDController(4, 0, 0);
-        yController = new PIDController(4, 0, 0);
-        xController.setTolerance(.02);
-        yController.setTolerance(.02);
-
-        xLimiterGP = new SlewRateLimiter(5);
-        yLimiterGP = new SlewRateLimiter(5);
-
-        control = yawControl.omega;
+        xAlignController = new PIDController(5, 0, 0);
+        yAlignController = new PIDController(5, 0, 0);
+        xAlignController.setTolerance(.02);
+        yAlignController.setTolerance(.02);
+        omegaAlignController = new PIDController(4, 0, 0);
+        omegaAlignController.enableContinuousInput(-Math.PI, Math.PI);
+        omegaAlignController.setTolerance(Math.toRadians(1));
 
         driveXVelocity = IO.getJoystickValue(Controls.driveXVelocity);
         driveYVelocity = IO.getJoystickValue(Controls.driveYVelocity);
         driveOmega = IO.getJoystickValue(Controls.driveOmega);
 
-        gpLock = IO.getButtonValue(Controls.gpLock);
-        yawLock = IO.getButtonValue(Controls.yawLock);
+        leftAlign = IO.getButtonValue(Controls.leftAlign);
+        rightAlign = IO.getButtonValue(Controls.rightAlign);
+
+        if (Superstructure.getInstance().getAlliance().equals(DriverStation.Alliance.Blue)) {
+            reefSections.add(FiledConstants.BlueReef.F);
+            reefSections.add(FiledConstants.BlueReef.FL);
+            reefSections.add(FiledConstants.BlueReef.BL);
+            reefSections.add(FiledConstants.BlueReef.B);
+            reefSections.add(FiledConstants.BlueReef.BR);
+            reefSections.add(FiledConstants.BlueReef.FR);
+
+            F = FiledConstants.BlueReef.F;
+            F_LEFT = FiledConstants.BlueReef.F_LEFT;
+            F_RIGHT = FiledConstants.BlueReef.F_RIGHT;
+
+            FL = FiledConstants.BlueReef.FL;
+            FL_LEFT = FiledConstants.BlueReef.FL_LEFT;
+            FL_RIGHT = FiledConstants.BlueReef.FL_RIGHT;
+
+            BL = FiledConstants.BlueReef.BL;
+            BL_LEFT = FiledConstants.BlueReef.BL_LEFT;
+            BL_RIGHT = FiledConstants.BlueReef.BL_RIGHT;
+
+            B = FiledConstants.BlueReef.B;
+            B_LEFT = FiledConstants.BlueReef.B_LEFT;
+            B_RIGHT = FiledConstants.BlueReef.B_RIGHT;
+
+            BR = FiledConstants.BlueReef.BR;
+            BR_LEFT = FiledConstants.BlueReef.BR_LEFT;
+            BR_RIGHT = FiledConstants.BlueReef.BR_RIGHT;
+
+            FR = FiledConstants.BlueReef.FR;
+            FR_LEFT = FiledConstants.BlueReef.FR_LEFT;
+            FR_RIGHT = FiledConstants.BlueReef.FR_RIGHT;
+        }else{
+            reefSections.add(FiledConstants.RedReef.F);
+            reefSections.add(FiledConstants.RedReef.FL);
+            reefSections.add(FiledConstants.RedReef.BL);
+            reefSections.add(FiledConstants.RedReef.B);
+            reefSections.add(FiledConstants.RedReef.BR);
+            reefSections.add(FiledConstants.RedReef.FR);
+
+            F = FiledConstants.RedReef.F;
+            F_LEFT = FiledConstants.RedReef.F_LEFT;
+            F_RIGHT = FiledConstants.RedReef.F_RIGHT;
+
+            FL = FiledConstants.RedReef.FL;
+            FL_LEFT = FiledConstants.RedReef.FL_LEFT;
+            FL_RIGHT = FiledConstants.RedReef.FL_RIGHT;
+
+            BL = FiledConstants.RedReef.BL;
+            BL_LEFT = FiledConstants.RedReef.BL_LEFT;
+            BL_RIGHT = FiledConstants.RedReef.BL_RIGHT;
+
+            B = FiledConstants.RedReef.B;
+            B_LEFT = FiledConstants.RedReef.B_LEFT;
+            B_RIGHT = FiledConstants.RedReef.B_RIGHT;
+
+            BR = FiledConstants.RedReef.BR;
+            BR_LEFT = FiledConstants.RedReef.BR_LEFT;
+            BR_RIGHT = FiledConstants.RedReef.BR_RIGHT;
+
+            FR = FiledConstants.RedReef.FR;
+            FR_LEFT = FiledConstants.RedReef.FR_LEFT;
+            FR_RIGHT = FiledConstants.RedReef.FR_RIGHT;
+        }
     }
 
+    @Logged (name = "Target Pose")
+    public Pose2d getTargetPose() {
+        return targetPose;
+    }
     @Override
     public void execute() {
-        if (!gpLock.getAsBoolean()) {
-
-            if (yawLock.getAsBoolean()) {
-                control = yawControl.target;
-            }else{
-                control = yawControl.omega;
-            }
+        boolean left = leftAlign.getAsBoolean();
+        boolean right = rightAlign.getAsBoolean();
+        if (!(left || right)) {
 
             double verticalVelocity;
             double horizontalVelocity;
@@ -112,87 +194,94 @@ public class ManualDriveCommand extends Command {
             verticalVelocity = xLimiter.calculate(verticalVelocity);
             horizontalVelocity = yLimiter.calculate(horizontalVelocity);
 
-            switch (control)
-            {
-                case omega -> {
-                    double omegaVelocity;
+            double omegaVelocity;
 
-                    omegaVelocity = -driveOmega.getAsDouble();
-                    omegaVelocity = MathUtil.applyDeadband(omegaVelocity, .05);
+            omegaVelocity = -driveOmega.getAsDouble();
+            omegaVelocity = MathUtil.applyDeadband(omegaVelocity, .05);
 
-                    if ((omegaVelocity == 0 && !hasBeenZero) | (Math.abs(DrivetrainSubsystem.getInstance().getPose().getRotation().minus(lockedHeading).getDegrees()) > 2)) {
-                        hasBeenZero = true;
-                        lockedHeading = DrivetrainSubsystem.getInstance().getPose().getRotation();
-                    }else if (omegaVelocity != 0) {
-                        hasBeenZero = false;
-                    }
-
-                    if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 45) {
-                        DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityThetaControlFOC);
-                        DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity, lockedHeading,true);
-                    }else{
-                        omegaVelocity = omegaVelocity * DrivetrainConstants.MAX_ANGULAR_VELOCITY;
-                        omegaVelocity = omegaLimiter.calculate(omegaVelocity);
-
-                        ChassisSpeeds targetSpeeds;
-                        targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
-                        targetSpeeds.toRobotRelativeSpeeds(DrivetrainSubsystem.getInstance().getPose().getRotation());
-                        DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
-                        DrivetrainSubsystem.getInstance().setVelocityFOC(targetSpeeds);
-                    }
-                }
-                case target -> {
-                
-                    // This will be alliance specific points
-                    ArrayList<Pose2d> landMarks = new ArrayList<>();
-                    landMarks.add(new Pose2d(0 ,5.554803371429443 ,new Rotation2d()));
-//                    landMarks.add(new Pose2d(0,3.048,new Rotation2d()));
-                    // landMarks.add(new Pose2d(2.67,1.17,new Rotation2d()));
-
-                    Pose2d currentPose;
-                    currentPose = DrivetrainSubsystem.getInstance().getPose();
-                    Pose2d closetPose = currentPose.nearest(landMarks);
-
-                    double xDistance = currentPose.getX() - closetPose.getX();
-                    double yDistance = currentPose.getY() - closetPose.getY();
-                    double theta = Math.atan2(-yDistance,-xDistance);
-
-                    DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityThetaControlFOC);
-                    DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity,Rotation2d.fromRadians(theta),false);
-                }
+            if ((omegaVelocity == 0 && !hasBeenZero) | (Math.abs(DrivetrainSubsystem.getInstance().getPose().getRotation().minus(lockedHeading).getDegrees()) > 2)) {
+                hasBeenZero = true;
+                lockedHeading = DrivetrainSubsystem.getInstance().getPose().getRotation();
+            }else if (omegaVelocity != 0) {
+                hasBeenZero = false;
             }
+
+            if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 45) {
+                DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityThetaControlFOC);
+                DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity, lockedHeading,true);
+            }else{
+                omegaVelocity = omegaVelocity * DrivetrainConstants.MAX_ANGULAR_VELOCITY;
+                omegaVelocity = omegaLimiter.calculate(omegaVelocity);
+
+                ChassisSpeeds targetSpeeds;
+                targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
+                targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, DrivetrainSubsystem.getInstance().getPose().getRotation());
+                DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
+                DrivetrainSubsystem.getInstance().setVelocityFOC(targetSpeeds);
+            }
+            alignLastTick = false;
         }else{
-            if (VisionSubsystem.getInstance().isTargetDetected()) {
-                Transform2d transform2d = VisionSubsystem.getInstance().getTargetTransform();
+            Pose2d currentPose = DrivetrainSubsystem.getInstance().getPose();
+            if (!alignLastTick) {
+                targetPose = currentPose.nearest(reefSections);
+                if (targetPose == F) {
+                    System.out.println("Front");
+                    if (left) {
+                        targetPose = F_LEFT;
+                    } else {
+                        targetPose = F_RIGHT;
+                    }
+                }else if (targetPose == FL) {
+                    System.out.println("FrontLeft");
+                    if (left) {
+                        targetPose = FL_LEFT;
+                    }else {
+                        targetPose = FL_RIGHT;
+                    }
+                }else if (targetPose == BL) {
+                    System.out.println("Back Left");
+                    if (left) {
+                        targetPose = BL_LEFT;
+                    }else {
+                        targetPose = BL_RIGHT;
+                    }
+                }else if (targetPose == B) {
+                    if (left) {
+                        targetPose = B_LEFT;
+                    }else {
+                        targetPose = B_RIGHT;
+                    }
+                }else if (targetPose == BR) {
+                    if (left) {
+                        targetPose = BR_LEFT;
+                    }else{
+                        targetPose = BR_RIGHT;
+                    }
+                }else if (targetPose == FR) {
+                    if (left) {
+                        targetPose = FR_LEFT;
+                    }else{
+                        targetPose = FR_RIGHT;
+                    }
+                }else{
 
-                double xOutput = xController.calculate(transform2d.getX(), -.67);
-                double yOutput = yController.calculate(transform2d.getY(), 0);
-
-                xOutput = MathUtil.clamp(xOutput, -3,3);
-                yOutput = MathUtil.clamp(yOutput, -3,3);
-
-//                xOutput = xLimiterGP.calculate(xOutput);
-//                yOutput = yLimiterGP.calculate(yOutput);
-
-                DrivetrainSubsystem.getInstance().setVelocityRR(new ChassisSpeeds(-xOutput, -yOutput,0));
-                DrivetrainSubsystem.getInstance().setControlMode(ControlMethods.VelocityRR);
-
-//                double currentX = VisionSubsystem.getInstance().getTargetX();
-//                double currentY = VisionSubsystem.getInstance().getTargetY();
-//
-//                double xOutput = -xController.calculate(currentX, 0);
-//                double yOutput = yController.calculate(currentY, 0);
-//
-//                xOutput = MathUtil.clamp(xOutput, -3,3);
-//                yOutput = MathUtil.clamp(yOutput, -3,3);
-//
-//                xOutput = xLimiterGP.calculate(xOutput);
-//                yOutput = yLimiterGP.calculate(yOutput);
-//
-//                DrivetrainSubsystem.getInstance().setVelocityRR(new ChassisSpeeds(yOutput, xOutput,0));
-//                DrivetrainSubsystem.getInstance().setControlMode(ControlMethods.VelocityRR);
+                }
+                alignLastTick = true;
             }
 
+            double xOutput = xAlignController.calculate(currentPose.getX(), targetPose.getX());
+            double yOutput = yAlignController.calculate(currentPose.getY(), targetPose.getY());
+            double omegaOutput = omegaAlignController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
+            omegaOutput = 0;
+
+            xOutput = MathUtil.clamp(xOutput, -3, 3);
+            yOutput = MathUtil.clamp(yOutput, -3, 3);
+            omegaOutput = MathUtil.clamp(omegaOutput, -6, 6);
+
+            ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, omegaOutput);
+            ChassisSpeeds.fromFieldRelativeSpeeds(speeds,currentPose.getRotation());
+            DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
+            DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
         }
 
     }

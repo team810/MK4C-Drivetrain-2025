@@ -1,7 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
@@ -9,7 +9,6 @@ import frc.robot.Robot;
 import frc.robot.lib.AdvancedSubsystem;
 import frc.robot.lib.LimelightHelpers;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
-import org.littletonrobotics.junction.Logger;
 
 import java.util.ArrayList;
 
@@ -42,18 +41,14 @@ public class VisionSubsystem extends AdvancedSubsystem {
                 targetX = LimelightHelpers.getTX(LL2);
                 targetY = LimelightHelpers.getTY(LL2);
 
-                double x = (Units.inchesToMeters(20) * Math.tan(Math.toRadians(targetX)));
-                double y = (Units.inchesToMeters(20) * Math.tan(Math.toRadians(-targetY) + Math.toRadians(-29.8))) - Units.inchesToMeters(15);
+                double x = (Units.inchesToMeters(22) * Math.tan(Math.toRadians(targetX)));
+                double y = (Units.inchesToMeters(22) * Math.tan(Math.toRadians(-targetY) + Math.toRadians(-34))) - Units.inchesToMeters(10);
                 targetTransform = new Transform2d(y, x, new Rotation2d());
                 targetPose = DrivetrainSubsystem.getInstance().getPose().transformBy(targetTransform);
             }
-        }else{
-            targetDetected = false;
-            targetX = 0;
-            targetY = 0;
         }
-        Logger.recordOutput("Vision/TargetTransform", targetTransform);
-        Logger.recordOutput("Vision/GPLocation", new Pose3d(targetPose));
+//        Logger.recordOutput("Vision/TargetTransform", targetTransform);
+//        Logger.recordOutput("Vision/GPLocation", new Pose3d(targetPose));
     }
 
     @Override
@@ -62,7 +57,7 @@ public class VisionSubsystem extends AdvancedSubsystem {
     }
 
     @Override
-    public void simulatePeriodic() {
+    public void simulationPeriodic() {
          targetDetected = true;
 
         targetX = 0;
@@ -72,9 +67,12 @@ public class VisionSubsystem extends AdvancedSubsystem {
         targetTransform = new Transform2d(DrivetrainSubsystem.getInstance().getPose(), targetPose);
 
     }
+
+    @Logged (name = "Target Transformation")
     public Transform2d getTargetTransform() {
         return targetTransform;
     }
+    @Logged (name = "Target Pose FOC")
     public Pose2d getTargetPose() {
         return targetPose;
     }
