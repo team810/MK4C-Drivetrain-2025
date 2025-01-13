@@ -53,6 +53,9 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
     private ChassisSpeeds targetSpeed;
 
+    private SwerveModuleState[] targetStates;
+    private SwerveModuleState[] currentStates;
+
     private Pose2d visionPose = new Pose2d();
 
     private DrivetrainSubsystem() {
@@ -148,6 +151,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
                 }
             }
         }
+
+        currentStates = new SwerveModuleState[]{frontLeft.getCurrentState(), frontRight.getCurrentState(), backLeft.getCurrentState(), backRight.getCurrentState()};
     }
 
     @Override
@@ -158,6 +163,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             }
             case VelocityFOC -> {
                 targetSpeed = velocityFOC;
+                targetSpeed = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeed, DrivetrainSubsystem.getInstance().getPose().getRotation());
             }
             case VelocityRR -> {
                 targetSpeed = velocityRR;
@@ -167,6 +173,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             }
         }
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(targetSpeed);
+        targetStates = states;
 
         states[0].optimize(Rotation2d.fromRadians(frontLeft.getTheta().in(Radians)));
         states[1].optimize(Rotation2d.fromRadians(frontRight.getTheta().in(Radians)));
@@ -182,10 +189,6 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         frontRight.writePeriodic();
         backLeft.writePeriodic();
         backRight.writePeriodic();
-
-//        Logger.recordOutput("Drivetrain/Applied/Speeds",targetSpeed);
-
-//        Logger.recordOutput("Drivetrain/Applied/States",states);
     }
 
     @Override
@@ -204,6 +207,16 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
     public Measure<AngularVelocityUnit> getRate() {
         return gyro.getAngularVelocityZWorld().getValue();
+    }
+
+    @Logged (name = "Target States")
+    public SwerveModuleState[] getTargetStates() {
+        return targetStates;
+    }
+
+    @Logged (name = "Current States")
+    public SwerveModuleState[] getCurrentStates() {
+        return currentStates;
     }
 
     @Logged (name = "Robot Pose")

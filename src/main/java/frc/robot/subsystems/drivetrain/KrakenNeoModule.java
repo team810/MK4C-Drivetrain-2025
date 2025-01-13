@@ -1,7 +1,6 @@
 package frc.robot.subsystems.drivetrain;
 
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.CANcoderSimState;
@@ -17,7 +16,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Robot;
 
@@ -62,7 +60,7 @@ public class KrakenNeoModule implements SwerveModuleIO{
         driveMotor.getConfigurator().apply(DrivetrainConstants.getDriveConfig(id));
         driveSimState = driveMotor.getSimState();
 
-        driveMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(1),.0001,1),DCMotor.getKrakenX60Foc(1));
+        driveMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(1),.000000001,1),DCMotor.getKrakenX60Foc(1));
 
         steerMotor = new SparkMax(DrivetrainConstants.getSteerID(id), SparkLowLevel.MotorType.kBrushless);
         steerMotor.clearFaults();
@@ -76,11 +74,21 @@ public class KrakenNeoModule implements SwerveModuleIO{
         
         encoderSimState = encoder.getSimState();
 
-        steerController = new PIDController(
-                DrivetrainConstants.STEER_KP,
-                DrivetrainConstants.STEER_KI,
-                DrivetrainConstants.STEER_KD
-        );
+        if (Robot.isReal())
+        {
+            steerController = new PIDController(
+                    DrivetrainConstants.STEER_KP,
+                    DrivetrainConstants.STEER_KI,
+                    DrivetrainConstants.STEER_KD
+            );
+        }else{
+            steerController = new PIDController(
+                    15,
+                    0,
+                    0
+            );
+        }
+
         steerController.enableContinuousInput(-Math.PI, Math.PI);
 
         driveMotor.optimizeBusUtilization();
@@ -92,34 +100,20 @@ public class KrakenNeoModule implements SwerveModuleIO{
     @Override
     public void readPeriodic(Observer.ModuleObservationRaw data) {
         rawInput = data;
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "Position", getPosition());
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "VelocityRPS", rawInput.velocity);
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "Velocity", getVelocity());
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "Acceleration", getAcceleration());
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "AppliedDriveVoltage", rawInput.appliedVoltage);
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "DriveCurrent", rawInput.current);
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "Force", getForce());
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "Torque", getTorque());
-//
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "Theta", getTheta());
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "Omega", getOmega());
-
         targetState = new SwerveModuleState();
     }
 
     @Override
     public void writePeriodic() {
-
-
         // Control over drive motor
         double velocity = targetState.speedMetersPerSecond;
         double acceleration = 0;
         velocity = (velocity/(DrivetrainConstants.WHEEL_DIAMETER_METERS * Math.PI)) * DrivetrainConstants.DRIVE_GEAR_RATIO; // converts mps to rotations of motor per second
         acceleration = (velocity - ((getVelocity().in(MetersPerSecond)/(DrivetrainConstants.WHEEL_DIAMETER_METERS * Math.PI)) * DrivetrainConstants.DRIVE_GEAR_RATIO)) / Robot.PERIOD;
 
-        double iTime;
-        double fTime;
-        iTime = RobotController.getFPGATime();
+//        double iTime;
+//        double fTime;
+//        iTime = RobotController.getFPGATime();
 
         // This code was taking up to .019 milliseconds to run
 //        driveMotorControl = new VelocityVoltage(velocity);
@@ -134,10 +128,9 @@ public class KrakenNeoModule implements SwerveModuleIO{
 //
 //        driveMotor.setControl(driveMotorControl);
 
-
         driveMotor.set(velocity/(DrivetrainConstants.MAX_RPM_FOC/60));
 
-        fTime = RobotController.getFPGATime();
+//        fTime = RobotController.getFPGATime();
 //        Logger.recordOutput("ReadPeriodicTime",(fTime-iTime)/1000000);
 
         // Control over steer motor

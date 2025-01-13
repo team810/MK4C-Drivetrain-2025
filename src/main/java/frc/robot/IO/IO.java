@@ -3,12 +3,10 @@ package frc.robot.IO;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.Robot;
 
 import java.util.HashMap;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 public abstract class IO {
     public enum PrimaryDriverProfiles {
@@ -43,10 +41,13 @@ public abstract class IO {
 //                }else{
 //                    controlsButtons.put(Controls.yawLock,() -> primary.getRawButton(2));
 //                }
+//                controlsButtons.put(Controls.leftAlign,primary::getAButton);
+//                controlsButtons.put(Controls.rightAlign,primary::getBButton);
                 controlsButtons.put(Controls.leftAlign,() -> primary.getLeftTriggerAxis() > .8);
                 controlsButtons.put(Controls.rightAlign, () -> primary.getRightTriggerAxis() > .8);
 
-                
+                controlsButtons.put(Controls.leftSource, primary::getLeftBumperButton);
+                controlsButtons.put(Controls.rightSource, primary::getRightBumperButton);
                 
                 break;
         }

@@ -2,24 +2,14 @@
 package frc.robot;
 
 
-import choreo.Choreo;
-import choreo.trajectory.SwerveSample;
-import choreo.trajectory.Trajectory;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.ManualDriveCommand;
-import frc.robot.commands.auto.AutoAlignGP;
-import frc.robot.commands.auto.FollowTrajectory;
-import frc.robot.commands.auto.Interlope;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
-import jdk.jshell.execution.Util;
-import java.util.Optional;
 
 @Logged
 public class Robot extends TimedRobot {

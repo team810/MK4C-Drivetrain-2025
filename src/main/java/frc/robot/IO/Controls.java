@@ -11,4 +11,7 @@ public enum Controls {
     leftAlign,
     rightAlign,
 
+    leftSource,
+    rightSource,
+
 }
