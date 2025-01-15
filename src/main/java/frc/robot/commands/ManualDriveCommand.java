@@ -27,7 +27,8 @@ import java.util.function.DoubleSupplier;
 public class ManualDriveCommand extends Command {
     private final SlewRateLimiter xLimiter;
     private final SlewRateLimiter yLimiter;
-    private final SlewRateLimiter omegaLimiter;
+
+    private final SlewRateLimiter velocityLimiter;
 
     private final PIDController xAlignController;
     private final PIDController yAlignController;
@@ -75,13 +76,16 @@ public class ManualDriveCommand extends Command {
     private Pose2d targetPose = new Pose2d();
     private boolean alignLastTick = false; // Was the code in align mode last tick
 
-    public ManualDriveCommand() {
-        xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION * 100);
-        yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION * 100);
-        omegaLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_ANGULAR_ACCELERATION * 100);
+    private double invert = 1;
 
-        xAlignController = new PIDController(7, 0, 0);
-        yAlignController = new PIDController(7, 0, 0);
+    public ManualDriveCommand() {
+        xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION/1.2); // Fix to match the actual constants of the drivetrain
+        yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION/1.2);
+
+        velocityLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
+
+        xAlignController = new PIDController(3, 0, 0);
+        yAlignController = new PIDController(3, 0, 0);
         xAlignController.setTolerance(.02);
         yAlignController.setTolerance(.02);
         omegaAlignController = new PIDController(4, 0, 0);
@@ -161,17 +165,12 @@ public class ManualDriveCommand extends Command {
             FR_LEFT = FiledConstants.RedReef.FR_LEFT;
             FR_RIGHT = FiledConstants.RedReef.FR_RIGHT;
         }
-    }
 
-//    @Logged (name = "Target Pose")
-//    public Pose2d getTargetPose() {
-//        if (targetPose == null)
-//        {
-//            return new Pose2d();
-//        }else{
-//            return targetPose;
-//        }
-//    }
+        if (Superstructure.getInstance().getAlliance() == DriverStation.Alliance.Red)
+        {
+            invert = invert * -1;
+        }
+    }
     @Override
     public void execute() {
         boolean left = leftAlign.getAsBoolean();
@@ -184,12 +183,7 @@ public class ManualDriveCommand extends Command {
 
             double verticalVelocity;
             double horizontalVelocity;
-            double invert = 1;
 
-            if (Superstructure.getInstance().getAlliance() == DriverStation.Alliance.Red)
-            {
-                invert = invert * -1;
-            }
             horizontalVelocity = -driveYVelocity.getAsDouble();
             verticalVelocity = -driveXVelocity.getAsDouble();
 
@@ -202,13 +196,12 @@ public class ManualDriveCommand extends Command {
             verticalVelocity = verticalVelocity * DrivetrainConstants.MAX_VELOCITY;
             horizontalVelocity = horizontalVelocity * DrivetrainConstants.MAX_VELOCITY;
 
-            verticalVelocity = xLimiter.calculate(verticalVelocity);
-            horizontalVelocity = yLimiter.calculate(horizontalVelocity);
+
 
             double omegaVelocity;
 
             omegaVelocity = -driveOmega.getAsDouble();
-            omegaVelocity = MathUtil.applyDeadband(omegaVelocity, .05);
+            omegaVelocity = MathUtil.applyDeadband(omegaVelocity, .1);
 
             if ((omegaVelocity == 0 && !hasBeenZero) | (Math.abs(DrivetrainSubsystem.getInstance().getPose().getRotation().minus(lockedHeading).getDegrees()) > 2)) {
                 hasBeenZero = true;
@@ -217,21 +210,26 @@ public class ManualDriveCommand extends Command {
                 hasBeenZero = false;
             }
 
-            if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 45) {
+            if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 15) {
+                verticalVelocity = xLimiter.calculate(verticalVelocity);
+                horizontalVelocity = yLimiter.calculate(horizontalVelocity);
+
                 DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityThetaControlFOC);
                 DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity, lockedHeading,true);
             }else{
                 omegaVelocity = omegaVelocity * DrivetrainConstants.MAX_ANGULAR_VELOCITY;
-                omegaVelocity = omegaLimiter.calculate(omegaVelocity);
 
-                ChassisSpeeds targetSpeeds;
-                targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
-//                targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, DrivetrainSubsystem.getInstance().getPose().getRotation());
+                ChassisSpeeds targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
+                targetSpeeds = limitSpeeds(targetSpeeds);
+
                 DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
                 DrivetrainSubsystem.getInstance().setVelocityFOC(targetSpeeds);
             }
+
             alignLastTick = false;
+
         } else if (left || right) {
+
             Pose2d currentPose = DrivetrainSubsystem.getInstance().getPose();
             if (!alignLastTick) {
                 targetPose = currentPose.nearest(reefSections);
@@ -274,8 +272,6 @@ public class ManualDriveCommand extends Command {
                     }else{
                         targetPose = FR_RIGHT;
                     }
-                }else{
-
                 }
                 alignLastTick = true;
             }
@@ -284,15 +280,15 @@ public class ManualDriveCommand extends Command {
             double yOutput = yAlignController.calculate(currentPose.getY(), targetPose.getY());
             double omegaOutput = omegaAlignController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
 
-            xOutput = MathUtil.clamp(xOutput, -3, 3);
-            yOutput = MathUtil.clamp(yOutput, -3, 3);
-            omegaOutput = MathUtil.clamp(omegaOutput, -6, 6);
-
             ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, omegaOutput);
-//            ChassisSpeeds.fromFieldRelativeSpeeds(speeds,currentPose.getRotation());
+            speeds = limitSpeeds(speeds);
+
             DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
             DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
-        } else if (leftSourceB || rightSourceB) {
+
+
+        } else {
+            alignLastTick = false;
             Pose2d currentPose = DrivetrainSubsystem.getInstance().getPose();
             Pose2d targetPose = new Pose2d();
             if (leftSourceB) {
@@ -305,17 +301,35 @@ public class ManualDriveCommand extends Command {
             double yOutput = yAlignController.calculate(currentPose.getY(), targetPose.getY());
             double omegaOutput = omegaAlignController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
 
-            xOutput = MathUtil.clamp(xOutput, -4.5, 4.5);
-            yOutput = MathUtil.clamp(yOutput, -4.5, 4.5);
-            omegaOutput = MathUtil.clamp(omegaOutput, -6, 6);
-
             ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, omegaOutput);
-//            ChassisSpeeds.fromFieldRelativeSpeeds(speeds,currentPose.getRotation());
+            speeds = limitSpeeds(speeds);
+
             DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
             DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
         }
     }
 
+    public ChassisSpeeds limitSpeeds(ChassisSpeeds speeds) {
+        Rotation2d heading = new Rotation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+        double linearVelocity = Math.sqrt((speeds.vxMetersPerSecond * speeds.vxMetersPerSecond) + (speeds.vyMetersPerSecond * speeds.vyMetersPerSecond));
+        double rotationalLinearVelocity = speeds.omegaRadiansPerSecond * (DrivetrainConstants.DRIVETRAIN_LENGTH/2);
+        double totalLinearVelocity = linearVelocity + rotationalLinearVelocity;
+
+        double rotationalProportion = rotationalLinearVelocity / totalLinearVelocity;
+        double linearProportion = linearVelocity / totalLinearVelocity;
+
+        totalLinearVelocity = MathUtil.clamp(totalLinearVelocity, -DrivetrainConstants.MAX_VELOCITY, DrivetrainConstants.MAX_VELOCITY);
+        totalLinearVelocity = velocityLimiter.calculate(totalLinearVelocity);
+
+        double limitedLinearVelocity = totalLinearVelocity * linearProportion;
+
+        speeds.vxMetersPerSecond = limitedLinearVelocity * heading.getCos();
+        speeds.vyMetersPerSecond = limitedLinearVelocity * heading.getSin();
+
+        speeds.omegaRadiansPerSecond = (totalLinearVelocity * rotationalProportion) / (DrivetrainConstants.DRIVETRAIN_LENGTH); // v=wr
+
+        return speeds;
+    }
 
     @Override
     public boolean isFinished() {

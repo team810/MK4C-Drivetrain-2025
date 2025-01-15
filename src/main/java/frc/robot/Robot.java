@@ -1,10 +1,10 @@
-
 package frc.robot;
-
 
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.ManualDriveCommand;
@@ -14,22 +14,18 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 @Logged
 public class Robot extends TimedRobot {
     public static final double PERIOD = .020;
+    private final PowerDistribution pdp = new PowerDistribution();
 
     public Robot()
     {
         super(PERIOD);
         Epilogue.bind(this);
-//        Logger.recordMetadata("ProjectName", "Swerve Drivetrain");
+        DataLogManager.logNetworkTables(true);
+        DataLogManager.start();
+
         DriverStation.silenceJoystickConnectionWarning(true);
-//
-//        if (isReal()) {
-//            Logger.addDataReceiver(new NT4Publisher());
-//            Logger.addDataReceiver(new WPILOGWriter());
-//        } else {
-//            Logger.addDataReceiver(new NT4Publisher());
-//        }
-//        Logger.start();
         CommandScheduler.getInstance().setPeriod(.015);
+
 
         Superstructure.getInstance().initialize();
         CommandScheduler.getInstance().unregisterSubsystem(DrivetrainSubsystem.getInstance(), VisionSubsystem.getInstance());
@@ -102,7 +98,11 @@ public class Robot extends TimedRobot {
         manualDriveCommand = new ManualDriveCommand();
         CommandScheduler.getInstance().schedule(manualDriveCommand);
     }
-    
+
+    @Logged (name = "Total Current Draw")
+    public double getTotalCurrentDraw() {
+        return pdp.getTotalCurrent();
+    }
     
     @Override
     public void teleopPeriodic() {}

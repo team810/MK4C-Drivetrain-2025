@@ -116,19 +116,19 @@ public class KrakenNeoModule implements SwerveModuleIO{
 //        iTime = RobotController.getFPGATime();
 
         // This code was taking up to .019 milliseconds to run
-//        driveMotorControl = new VelocityVoltage(velocity);
-//        driveMotorControl.UpdateFreqHz = 1000;
-//        driveMotorControl.Acceleration = acceleration;
-//        driveMotorControl.FeedForward = 0;
-//        driveMotorControl.Slot = 0;
-//        driveMotorControl.EnableFOC = true;
-//        driveMotorControl.LimitForwardMotion = false;
-//        driveMotorControl.LimitReverseMotion = false;
-//        driveMotorControl.UseTimesync = false;
-//
-//        driveMotor.setControl(driveMotorControl);
+        driveMotorControl = new VelocityVoltage(velocity);
+        driveMotorControl.UpdateFreqHz = 1000;
+        driveMotorControl.Acceleration = acceleration;
+        driveMotorControl.FeedForward = 0;
+        driveMotorControl.Slot = 0;
+        driveMotorControl.EnableFOC = true;
+        driveMotorControl.LimitForwardMotion = false;
+        driveMotorControl.LimitReverseMotion = false;
+        driveMotorControl.UseTimesync = false;
 
-        driveMotor.set(velocity/(DrivetrainConstants.MAX_RPM_FOC/60));
+        driveMotor.setControl(driveMotorControl);
+
+//        driveMotor.set(velocity/(DrivetrainConstants.MAX_RPM_FOC/60));
 
 //        fTime = RobotController.getFPGATime();
 //        Logger.recordOutput("ReadPeriodicTime",(fTime-iTime)/1000000);

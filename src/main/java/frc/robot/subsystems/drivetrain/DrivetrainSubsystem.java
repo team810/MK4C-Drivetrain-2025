@@ -87,7 +87,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
                 kinematics,
                 gyro.getRotation2d(),
                 new SwerveModulePosition[]{observation.frontLeft, observation.frontRight, observation.backLeft, observation.backRight},
-                new Pose2d()
+                new Pose2d(0,0 , new Rotation2d(0))
         );
 
         targetSpeed = new ChassisSpeeds(0,0,0);
@@ -98,7 +98,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
         if (DrivetrainConstants.USING_VISION) {
             // Change the camera pose relative to robot center (x forward, y left, z up, degrees)
-            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_NAME, Units.inchesToMeters(14.75), Units.inchesToMeters(4),Units.inchesToMeters(23),-4,25,0);
+            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_NAME, Units.inchesToMeters(11), Units.inchesToMeters(1),Units.inchesToMeters(11.25),-4,0,0);
         }
     }
 
@@ -130,7 +130,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             boolean reject = false;
 
             LimelightHelpers.SetRobotOrientation(DrivetrainConstants.LIME_LIGHT_NAME, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
-            LimelightHelpers.PoseEstimate results = LimelightHelpers.getBotPoseEstimate_wpiBlue(DrivetrainConstants.LIME_LIGHT_NAME);
+            LimelightHelpers.PoseEstimate results = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(DrivetrainConstants.LIME_LIGHT_NAME);
+
             if (results != null) {
 
                 if (results.avgTagArea > .2)
@@ -146,6 +147,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
                     if(!reject)
                     {
                         visionPose = results.pose;
+
                         odometry.addVisionMeasurement(visionPose, results.timestampSeconds);
                     }
                 }
