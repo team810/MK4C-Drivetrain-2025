@@ -322,7 +322,6 @@ public class ManualDriveCommand extends Command {
         totalLinearVelocity = MathUtil.clamp(totalLinearVelocity, -DrivetrainConstants.MAX_VELOCITY, DrivetrainConstants.MAX_VELOCITY);
         totalLinearVelocity = velocityLimiter.calculate(totalLinearVelocity);
 
-
         double limitedLinearVelocity = totalLinearVelocity * linearProportion;
 
         speeds.vxMetersPerSecond = limitedLinearVelocity * heading.getCos();
