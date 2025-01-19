@@ -10,7 +10,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.FiledConstants;
+import frc.robot.FieldConstants;
 import frc.robot.IO.Controls;
 import frc.robot.IO.IO;
 import frc.robot.Superstructure;
@@ -79,16 +79,16 @@ public class ManualDriveCommand extends Command {
     private double invert = 1;
 
     public ManualDriveCommand() {
-        xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION/1.2); // Fix to match the actual constants of the drivetrain
-        yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION/1.2);
+        xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION); // Fix to match the actual constants of the drivetrain
+        yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
 
-        velocityLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
+        velocityLimiter = new SlewRateLimiter(6);
 
-        xAlignController = new PIDController(3, 0, 0);
-        yAlignController = new PIDController(3, 0, 0);
+        xAlignController = new PIDController(4, 0, 0);
+        yAlignController = new PIDController(4, 0, 0);
         xAlignController.setTolerance(.02);
         yAlignController.setTolerance(.02);
-        omegaAlignController = new PIDController(4, 0, 0);
+        omegaAlignController = new PIDController(7, 0, 0);
         omegaAlignController.enableContinuousInput(-Math.PI, Math.PI);
         omegaAlignController.setTolerance(Math.toRadians(1));
 
@@ -103,67 +103,67 @@ public class ManualDriveCommand extends Command {
         rightSource = IO.getButtonValue(Controls.rightSource);
 
         if (Superstructure.getInstance().getAlliance().equals(DriverStation.Alliance.Blue)) {
-            reefSections.add(FiledConstants.BlueReef.F);
-            reefSections.add(FiledConstants.BlueReef.FL);
-            reefSections.add(FiledConstants.BlueReef.BL);
-            reefSections.add(FiledConstants.BlueReef.B);
-            reefSections.add(FiledConstants.BlueReef.BR);
-            reefSections.add(FiledConstants.BlueReef.FR);
+            reefSections.add(FieldConstants.BlueReef.F);
+            reefSections.add(FieldConstants.BlueReef.FL);
+            reefSections.add(FieldConstants.BlueReef.BL);
+            reefSections.add(FieldConstants.BlueReef.B);
+            reefSections.add(FieldConstants.BlueReef.BR);
+            reefSections.add(FieldConstants.BlueReef.FR);
 
-            F = FiledConstants.BlueReef.F;
-            F_LEFT = FiledConstants.BlueReef.F_LEFT;
-            F_RIGHT = FiledConstants.BlueReef.F_RIGHT;
+            F = FieldConstants.BlueReef.F;
+            F_LEFT = FieldConstants.BlueReef.F_LEFT;
+            F_RIGHT = FieldConstants.BlueReef.F_RIGHT;
 
-            FL = FiledConstants.BlueReef.FL;
-            FL_LEFT = FiledConstants.BlueReef.FL_LEFT;
-            FL_RIGHT = FiledConstants.BlueReef.FL_RIGHT;
+            FL = FieldConstants.BlueReef.FL;
+            FL_LEFT = FieldConstants.BlueReef.FL_LEFT;
+            FL_RIGHT = FieldConstants.BlueReef.FL_RIGHT;
 
-            BL = FiledConstants.BlueReef.BL;
-            BL_LEFT = FiledConstants.BlueReef.BL_LEFT;
-            BL_RIGHT = FiledConstants.BlueReef.BL_RIGHT;
+            BL = FieldConstants.BlueReef.BL;
+            BL_LEFT = FieldConstants.BlueReef.BL_LEFT;
+            BL_RIGHT = FieldConstants.BlueReef.BL_RIGHT;
 
-            B = FiledConstants.BlueReef.B;
-            B_LEFT = FiledConstants.BlueReef.B_LEFT;
-            B_RIGHT = FiledConstants.BlueReef.B_RIGHT;
+            B = FieldConstants.BlueReef.B;
+            B_LEFT = FieldConstants.BlueReef.B_LEFT;
+            B_RIGHT = FieldConstants.BlueReef.B_RIGHT;
 
-            BR = FiledConstants.BlueReef.BR;
-            BR_LEFT = FiledConstants.BlueReef.BR_LEFT;
-            BR_RIGHT = FiledConstants.BlueReef.BR_RIGHT;
+            BR = FieldConstants.BlueReef.BR;
+            BR_LEFT = FieldConstants.BlueReef.BR_LEFT;
+            BR_RIGHT = FieldConstants.BlueReef.BR_RIGHT;
 
-            FR = FiledConstants.BlueReef.FR;
-            FR_LEFT = FiledConstants.BlueReef.FR_LEFT;
-            FR_RIGHT = FiledConstants.BlueReef.FR_RIGHT;
+            FR = FieldConstants.BlueReef.FR;
+            FR_LEFT = FieldConstants.BlueReef.FR_LEFT;
+            FR_RIGHT = FieldConstants.BlueReef.FR_RIGHT;
         }else{
-            reefSections.add(FiledConstants.RedReef.F);
-            reefSections.add(FiledConstants.RedReef.FL);
-            reefSections.add(FiledConstants.RedReef.BL);
-            reefSections.add(FiledConstants.RedReef.B);
-            reefSections.add(FiledConstants.RedReef.BR);
-            reefSections.add(FiledConstants.RedReef.FR);
+            reefSections.add(FieldConstants.RedReef.F);
+            reefSections.add(FieldConstants.RedReef.FL);
+            reefSections.add(FieldConstants.RedReef.BL);
+            reefSections.add(FieldConstants.RedReef.B);
+            reefSections.add(FieldConstants.RedReef.BR);
+            reefSections.add(FieldConstants.RedReef.FR);
 
-            F = FiledConstants.RedReef.F;
-            F_LEFT = FiledConstants.RedReef.F_LEFT;
-            F_RIGHT = FiledConstants.RedReef.F_RIGHT;
+            F = FieldConstants.RedReef.F;
+            F_LEFT = FieldConstants.RedReef.F_LEFT;
+            F_RIGHT = FieldConstants.RedReef.F_RIGHT;
 
-            FL = FiledConstants.RedReef.FL;
-            FL_LEFT = FiledConstants.RedReef.FL_LEFT;
-            FL_RIGHT = FiledConstants.RedReef.FL_RIGHT;
+            FL = FieldConstants.RedReef.FL;
+            FL_LEFT = FieldConstants.RedReef.FL_LEFT;
+            FL_RIGHT = FieldConstants.RedReef.FL_RIGHT;
 
-            BL = FiledConstants.RedReef.BL;
-            BL_LEFT = FiledConstants.RedReef.BL_LEFT;
-            BL_RIGHT = FiledConstants.RedReef.BL_RIGHT;
+            BL = FieldConstants.RedReef.BL;
+            BL_LEFT = FieldConstants.RedReef.BL_LEFT;
+            BL_RIGHT = FieldConstants.RedReef.BL_RIGHT;
 
-            B = FiledConstants.RedReef.B;
-            B_LEFT = FiledConstants.RedReef.B_LEFT;
-            B_RIGHT = FiledConstants.RedReef.B_RIGHT;
+            B = FieldConstants.RedReef.B;
+            B_LEFT = FieldConstants.RedReef.B_LEFT;
+            B_RIGHT = FieldConstants.RedReef.B_RIGHT;
 
-            BR = FiledConstants.RedReef.BR;
-            BR_LEFT = FiledConstants.RedReef.BR_LEFT;
-            BR_RIGHT = FiledConstants.RedReef.BR_RIGHT;
+            BR = FieldConstants.RedReef.BR;
+            BR_LEFT = FieldConstants.RedReef.BR_LEFT;
+            BR_RIGHT = FieldConstants.RedReef.BR_RIGHT;
 
-            FR = FiledConstants.RedReef.FR;
-            FR_LEFT = FiledConstants.RedReef.FR_LEFT;
-            FR_RIGHT = FiledConstants.RedReef.FR_RIGHT;
+            FR = FieldConstants.RedReef.FR;
+            FR_LEFT = FieldConstants.RedReef.FR_LEFT;
+            FR_RIGHT = FieldConstants.RedReef.FR_RIGHT;
         }
 
         if (Superstructure.getInstance().getAlliance() == DriverStation.Alliance.Red)
@@ -196,8 +196,6 @@ public class ManualDriveCommand extends Command {
             verticalVelocity = verticalVelocity * DrivetrainConstants.MAX_VELOCITY;
             horizontalVelocity = horizontalVelocity * DrivetrainConstants.MAX_VELOCITY;
 
-
-
             double omegaVelocity;
 
             omegaVelocity = -driveOmega.getAsDouble();
@@ -219,8 +217,11 @@ public class ManualDriveCommand extends Command {
             }else{
                 omegaVelocity = omegaVelocity * DrivetrainConstants.MAX_ANGULAR_VELOCITY;
 
+
+                verticalVelocity = xLimiter.calculate(verticalVelocity);
+                horizontalVelocity = yLimiter.calculate(horizontalVelocity);
                 ChassisSpeeds targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
-                targetSpeeds = limitSpeeds(targetSpeeds);
+//                targetSpeeds = limitSpeeds(targetSpeeds);
 
                 DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
                 DrivetrainSubsystem.getInstance().setVelocityFOC(targetSpeeds);
@@ -321,12 +322,13 @@ public class ManualDriveCommand extends Command {
         totalLinearVelocity = MathUtil.clamp(totalLinearVelocity, -DrivetrainConstants.MAX_VELOCITY, DrivetrainConstants.MAX_VELOCITY);
         totalLinearVelocity = velocityLimiter.calculate(totalLinearVelocity);
 
+
         double limitedLinearVelocity = totalLinearVelocity * linearProportion;
 
         speeds.vxMetersPerSecond = limitedLinearVelocity * heading.getCos();
         speeds.vyMetersPerSecond = limitedLinearVelocity * heading.getSin();
 
-        speeds.omegaRadiansPerSecond = (totalLinearVelocity * rotationalProportion) / (DrivetrainConstants.DRIVETRAIN_LENGTH); // v=wr
+        speeds.omegaRadiansPerSecond = (totalLinearVelocity * rotationalProportion) / (DrivetrainConstants.DRIVETRAIN_LENGTH/2); // v=wr
 
         return speeds;
     }

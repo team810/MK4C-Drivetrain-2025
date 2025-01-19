@@ -26,7 +26,6 @@ public class VisionSubsystem extends AdvancedSubsystem {
     private Transform2d targetTransform = new Transform2d();
     private Pose2d targetPose = new Pose2d();
 
-
     public VisionSubsystem() {
         gpPoseList.add(new Pose2d(2.8914051055908203  , 7.087372779846191  , new Rotation2d()));
         gpPoseList.add(new Pose2d(2.8914051055908203 , 5.567087650299072 , new Rotation2d()));

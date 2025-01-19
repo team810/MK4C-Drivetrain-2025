@@ -60,7 +60,7 @@ public class DrivetrainConstants {
     public static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(WHEEL_DIAMETER_INCHES);
 
     public static final double MASS = Units.lbsToKilograms(50); // Robot Mass kg
-    public static final double COEFFICIENT_OF_FRICTION = 1.5; //
+    public static final double COEFFICIENT_OF_FRICTION = 1; //
     public static final double MAX_TRACTION = (MASS * 9.8) * COEFFICIENT_OF_FRICTION; // Fn * Mu = Max traction in Newtons
     public static final double MAX_THEORETICAL_ACCELERATION = MAX_TRACTION / MASS; // m/s^2 f=ma f/m = a
     // 5.761
@@ -152,8 +152,8 @@ public class DrivetrainConstants {
         CurrentLimitsConfigs currentLimitConfig = new CurrentLimitsConfigs();
         currentLimitConfig.StatorCurrentLimitEnable = true;
         currentLimitConfig.SupplyCurrentLimitEnable = true;
-        currentLimitConfig.StatorCurrentLimit = 120;
-        currentLimitConfig.SupplyCurrentLimit = 50;
+        currentLimitConfig.StatorCurrentLimit = 40;
+        currentLimitConfig.SupplyCurrentLimit = 40;
         config.CurrentLimits = currentLimitConfig;
 
         VoltageConfigs voltageConfigs = new VoltageConfigs();

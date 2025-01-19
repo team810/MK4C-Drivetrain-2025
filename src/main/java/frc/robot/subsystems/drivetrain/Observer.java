@@ -3,6 +3,7 @@ package frc.robot.subsystems.drivetrain;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.hardware.CANrange;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.units.AngleUnit;
@@ -127,7 +128,7 @@ public class Observer extends Thread {
 
         backRightObservation = new ModuleObservationRaw();
         backRightSignals = backRight;
-
+        
         yawLock = new ReentrantReadWriteLock();
         yawSignal = yaw;
         // The can bus is at 50% usage at 500 hz, should be able to go up to 800
