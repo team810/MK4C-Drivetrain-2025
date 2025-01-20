@@ -245,7 +245,6 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
     }
 
     public void resetPose(Pose2d pose) {
-
         odometry.resetPosition(gyro.getRotation2d(), new SwerveModulePosition[]{
                 new SwerveModulePosition(frontLeft.getPosition(),Rotation2d.fromRadians(frontLeft.getTheta().in(Radian))),
                 new SwerveModulePosition(frontRight.getPosition(),Rotation2d.fromRadians(frontRight.getTheta().in(Radian))),

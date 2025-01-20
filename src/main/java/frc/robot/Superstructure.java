@@ -7,15 +7,18 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.IO.Controls;
 import frc.robot.IO.IO;
+import frc.robot.commands.auto.AutoFactory;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class Superstructure {
     private static Superstructure instance;
     private DriverStation.Alliance alliance;
+    private final AutoFactory autoFactory;
 
 
     public Superstructure() {
+        autoFactory = new AutoFactory();
         alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     }
 
@@ -41,6 +44,8 @@ public class Superstructure {
         if (!DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(alliance)) {
             DrivetrainSubsystem.getInstance().switchAlliances();
         }
+
+
     }
 
     public DriverStation.Alliance getAlliance() {
