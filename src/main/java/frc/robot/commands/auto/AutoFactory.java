@@ -4,8 +4,6 @@ import choreo.Choreo;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -51,17 +49,14 @@ public class AutoFactory {
     private SendableChooser<ReefOptions> secondScoreOptions = new SendableChooser<>();
     private SendableChooser<ReefOptions> thirdScoreOptions = new SendableChooser<>();
 
-    private final ShuffleboardTab autoTab = Shuffleboard.getTab("Auto");
-
     public AutoFactory() {
+
         startOptions.setDefaultOption("Center", StartOptions.Center);
         startOptions.addOption("Right", StartOptions.Right);
-        startOptions.addOption("Center", StartOptions.Center);
         startOptions.addOption("Left", StartOptions.Left);
 
-        sourceOptions.setDefaultOption("Right", SourceOptions.Left);
+        sourceOptions.setDefaultOption("Right", SourceOptions.Right);
         sourceOptions.addOption("Left", SourceOptions.Left);
-        sourceOptions.addOption("Right", SourceOptions.Right);
 
         sourceOptions.onChange(event -> {updateOptions();});
         startOptions.onChange(event -> {updateOptions();});
@@ -70,7 +65,9 @@ public class AutoFactory {
         secondScoreOptions.setDefaultOption("None", ReefOptions.None);
         thirdScoreOptions.setDefaultOption("None", ReefOptions.None);
 
+        SmartDashboard.clearPersistent("Starting Location");
         SmartDashboard.putData("Starting Location", startOptions);
+        SmartDashboard.clearPersistent("Source Location");
         SmartDashboard.putData("Source Location", sourceOptions);
 
         SmartDashboard.putData("First Score", firstScoreOptions);
@@ -137,8 +134,6 @@ public class AutoFactory {
     }
 
     private void setLeftSecondAndThirdOptions() {
-//        secondScoreOptions.close();
-//        thirdScoreOptions.close();
         secondScoreOptions = new SendableChooser<>();
         thirdScoreOptions = new SendableChooser<>();
 
@@ -186,9 +181,17 @@ public class AutoFactory {
     }
 
     private void updateOptions() {
-        System.out.println("updateOptions");
+
+        firstScoreOptions.close();
+        secondScoreOptions.close();
+        thirdScoreOptions.close();
+
+        SmartDashboard.updateValues();
+
         StartOptions startSelection = startOptions.getSelected();
         SourceOptions sourceSelection = sourceOptions.getSelected();
+
+        firstScoreOptions = new SendableChooser<>();
 
         switch (startSelection) {
             case Left : {
@@ -200,7 +203,7 @@ public class AutoFactory {
                          * Second and third selection can be
                          * L, K, J, I, H, G, B, A
                          */
-                        firstScoreOptions = new SendableChooser<>();
+
 
                         firstScoreOptions.addOption("G", ReefOptions.G);
                         firstScoreOptions.addOption("H", ReefOptions.H);
@@ -210,6 +213,7 @@ public class AutoFactory {
                         firstScoreOptions.addOption("L", ReefOptions.L);
 
                         setLeftSecondAndThirdOptions();
+                        break;
 
                     }
                     case Right: {
@@ -219,14 +223,15 @@ public class AutoFactory {
                         Second and third selection can be
                         A, B, C, D, E, F, G, H
                          */
-                        firstScoreOptions = new SendableChooser<>();
 
                         firstScoreOptions.addOption("G", ReefOptions.G);
                         firstScoreOptions.addOption("H", ReefOptions.H);
 
                         setRightSecondAndThirdOptions();
+                        break;
                     }
                 }
+                break;
             }
             case Center : {
                 switch (sourceSelection) {
@@ -237,7 +242,6 @@ public class AutoFactory {
                          Second and third selection can be
                           L, K, J, I, H, G, B, A
                          */
-                        firstScoreOptions = new SendableChooser<>();
 
                         firstScoreOptions.addOption("G", ReefOptions.G);
                         firstScoreOptions.addOption("H", ReefOptions.H);
@@ -253,7 +257,6 @@ public class AutoFactory {
                         A, B, C, D, E, F, G, H
                          */
                         setRightSecondAndThirdOptions();
-                        firstScoreOptions = new SendableChooser<>();
 
                         firstScoreOptions.addOption("E", ReefOptions.E);
                         firstScoreOptions.addOption("F", ReefOptions.F);
@@ -261,6 +264,7 @@ public class AutoFactory {
                         firstScoreOptions.addOption("H", ReefOptions.H);
                     }
                 }
+                break;
             }
             case Right : {
                 switch (sourceSelection) {
@@ -272,13 +276,11 @@ public class AutoFactory {
 
                          L, K, J, I, H, G, B, A
                          */
-                        firstScoreOptions = new SendableChooser<>();
-
-                        firstScoreOptions.addOption("G", ReefOptions.G);
-                        firstScoreOptions.addOption("H", ReefOptions.H);
 
                         setLeftSecondAndThirdOptions();
-
+                        firstScoreOptions.addOption("G", ReefOptions.G);
+                        firstScoreOptions.addOption("H", ReefOptions.H);
+                        break;
                     }
                     case Right: {
                         /*
@@ -287,7 +289,6 @@ public class AutoFactory {
                         Second and third selections
                         H, G, F, E, C, D, A, B
                          */
-                        firstScoreOptions = new SendableChooser<>();
 
                         firstScoreOptions.addOption("C", ReefOptions.C);
                         firstScoreOptions.addOption("D", ReefOptions.D);
@@ -297,16 +298,18 @@ public class AutoFactory {
                         firstScoreOptions.addOption("H", ReefOptions.H);
 
                         setRightSecondAndThirdOptions();
+                        break;
                     }
+
                 }
+                break;
             }
         }
-        SmartDashboard.clearPersistent("First Score");
+
         SmartDashboard.putData("First Score", firstScoreOptions);
         SmartDashboard.putData("Second Score", secondScoreOptions);
         SmartDashboard.putData("Third Score", thirdScoreOptions);
         SmartDashboard.updateValues();
-
     }
 
     private void generateAuto() {

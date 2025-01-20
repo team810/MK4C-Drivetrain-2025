@@ -5,23 +5,41 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.ManualDriveCommand;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 @Logged
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
     public static final double PERIOD = .020;
     private final PowerDistribution pdp = new PowerDistribution();
 
     public Robot()
     {
         super(PERIOD);
-        Epilogue.bind(this);
-        DataLogManager.logNetworkTables(true);
-        DataLogManager.start();
+        Logger.recordMetadata("ProjectName", "Reefscape"); // Set a metadata value
+
+        if (isReal()) {
+            Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+            Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+            new PowerDistribution(1, PowerDistribution.ModuleType.kRev); // Enables power distribution logging
+        } else {
+
+//            String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+//            Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+//            Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+            Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+            Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+        }
+
+        Logger.start();
 
         DriverStation.silenceJoystickConnectionWarning(true);
         CommandScheduler.getInstance().setPeriod(.015);
@@ -35,11 +53,12 @@ public class Robot extends TimedRobot {
         Superstructure.getInstance().configureActions();
     }
 
-    @Logged
+
     public DrivetrainSubsystem DrivetrainSubsystem() {
         return DrivetrainSubsystem.getInstance();
     }
-    @Logged
+
+
     public VisionSubsystem VisionSubsystem() {
         return VisionSubsystem.getInstance();
     }
@@ -90,20 +109,15 @@ public class Robot extends TimedRobot {
     public void autonomousPeriodic() {
 
     }
-    
-    @Logged (name = "Drive Command")
+
     ManualDriveCommand manualDriveCommand;
+
     @Override
     public void teleopInit() {
         manualDriveCommand = new ManualDriveCommand();
         CommandScheduler.getInstance().schedule(manualDriveCommand);
     }
 
-    @Logged (name = "Total Current Draw")
-    public double getTotalCurrentDraw() {
-        return pdp.getTotalCurrent();
-    }
-    
     @Override
     public void teleopPeriodic() {}
     

@@ -26,60 +26,50 @@ public interface SwerveModuleIO {
     /**
      * @return The value was last updated during the read periodic, if you need at a specific timestamp for odometry use the overload that takes in a timestamp
      */
-    @Logged (name = "Wheel Position")
     Distance getPosition();
 
 
     /**
      * @return The value was last updated during the read periodic, if you need at a specific timestamp for odometry use the overload that takes in a timestamp
      */
-    @Logged (name = "Wheel Velocity")
     LinearVelocity getVelocity();
 
     /**
      * @return The value was last updated during the read periodic, if you need at a specific timestamp for odometry use the overload that takes in a timestamp
      */
-    @Logged (name = "Wheel Acceleration")
     LinearAcceleration getAcceleration();
 
 
     /**
      * @return returns the voltage applied to the drive motor.
      */
-    @Logged (name = "Drive Voltage")
     Voltage getDriveAppliedVoltage();
 
     /**
      * @return This is the current angle the wheel is facing in radians wrapped from -PI to PI
      */
-    @Logged (name = "Wheel Angle")
     Angle getTheta();
 
     /**
      * @return This is the current angular velocity of the wheel
      */
-    @Logged (name = "Wheel Omega")
     AngularVelocity getOmega();
 
     /**
      * @return the horizontal force created by the module
      */
-    @Logged (name = "Force")
     Force getForce();
 
     /**
      * @return Returns of the spinning wheel
      */
-    @Logged (name = "Torque")
     Torque getTorque();
 
     /**
      * @return returns the voltage applied to the steer motor.
      */
-    @Logged (name = "Steer Voltage")
     Voltage getSteerAppliedVoltage();
 
-    @Logged (name = "Current State")
     SwerveModuleState getCurrentState();
 
     public Observer.ModuleSignals getModuleSignals();

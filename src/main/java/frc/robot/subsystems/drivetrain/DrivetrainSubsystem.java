@@ -29,13 +29,9 @@ import static edu.wpi.first.units.Units.Radians;
 public class DrivetrainSubsystem extends AdvancedSubsystem {
     private static DrivetrainSubsystem instance;
 
-    @Logged (name = "Front Left Module")
     private final SwerveModuleIO frontLeft;
-    @Logged (name = "Front Right Module")
     private final SwerveModuleIO frontRight;
-    @Logged (name = "Back Left Module")
     private final SwerveModuleIO backLeft;
-    @Logged (name = "Back Right Module")
     private final SwerveModuleIO backRight;
 
     private final Pigeon2 gyro;
@@ -211,17 +207,14 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         return gyro.getAngularVelocityZWorld().getValue();
     }
 
-    @Logged (name = "Target States")
     public SwerveModuleState[] getTargetStates() {
         return targetStates;
     }
 
-    @Logged (name = "Current States")
     public SwerveModuleState[] getCurrentStates() {
         return currentStates;
     }
 
-    @Logged (name = "Robot Pose")
     public Pose2d getPose() {
         return odometry.getEstimatedPosition();
     }
