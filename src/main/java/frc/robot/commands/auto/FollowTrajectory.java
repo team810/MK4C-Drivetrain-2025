@@ -21,9 +21,9 @@ public class FollowTrajectory extends Command {
     public FollowTrajectory(Trajectory<SwerveSample> trajectory) {
         timer = new Timer();
 
-        xController = new PIDController(0,0,0);
-        yController = new PIDController(0,0,0);
-        thetaController = new PIDController(0,0,0);
+        xController = new PIDController(2,0,0);
+        yController = new PIDController(2,0,0);
+        thetaController = new PIDController(3,0,0);
 
         this.trajectory = trajectory;
     }

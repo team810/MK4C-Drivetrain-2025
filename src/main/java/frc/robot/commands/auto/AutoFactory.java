@@ -163,7 +163,6 @@ public class AutoFactory {
     }
 
     private void setRightSecondAndThirdOptions() {
-        System.out.println("No");
         secondScoreOptions.addOption("A", ReefOptions.A);
         secondScoreOptions.addOption("B", ReefOptions.B);
         secondScoreOptions.addOption("C", ReefOptions.C);
@@ -355,7 +354,10 @@ public class AutoFactory {
                 break;
             }
         }
-
+        if (reefTarget1 == null || reefTarget2 == null || reefTarget3 == null) {
+            autoCommand = new InstantCommand(() -> System.out.println("Problem with auto"));
+            return;
+        }
         String startPath = startingLocation + "_" + reefTarget1.toString();
         String toSource1 = reefTarget1.toString() + "_" + sourceLocation;
         String sourceTo2 = sourceLocation + "_" + reefTarget2.toString();
