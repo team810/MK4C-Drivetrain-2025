@@ -12,7 +12,6 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class Superstructure {
     private static Superstructure instance;
-
     private DriverStation.Alliance alliance;
 
 
