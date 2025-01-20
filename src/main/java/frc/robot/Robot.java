@@ -1,19 +1,15 @@
 package frc.robot;
 
-import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.ManualDriveCommand;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
-import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 @Logged
@@ -84,24 +80,7 @@ public class Robot extends LoggedRobot {
     
     @Override
     public void autonomousInit() {
-
-//        Optional<Trajectory<SwerveSample>> path = Choreo.loadTrajectory("test");
-//        if (path.isEmpty()) {
-//            System.out.println("not found");
-//
-//        }
-//        Trajectory<SwerveSample> part1 = path.get().getSplit(0).get();
-//        Trajectory<SwerveSample> part2 = path.get().getSplit(2).get();
-//        SwerveSample part2Start = part2.getInitialSample(false).get();
-//        CommandScheduler.getInstance().schedule(
-//                new SequentialCommandGroup(
-//                        new InstantCommand(() -> DrivetrainSubsystem.getInstance().resetPose(path.get().getInitialPose(false).get())),
-//                        new FollowTrajectory(part1),
-//                        new AutoAlignGP(),
-//                        new Interlope(part2Start.getPose(), part2Start.vx, part2Start.vy, part2Start.omega),
-//                        new FollowTrajectory(part2)
-//                )
-//        );
+        Superstructure.getInstance().autonomousInit();
     }
     
     

@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.IO.Controls;
@@ -44,8 +45,10 @@ public class Superstructure {
         if (!DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(alliance)) {
             DrivetrainSubsystem.getInstance().switchAlliances();
         }
+    }
 
-
+    public void autonomousInit() {
+        CommandScheduler.getInstance().schedule(autoFactory.getAutoCommand());
     }
 
     public DriverStation.Alliance getAlliance() {

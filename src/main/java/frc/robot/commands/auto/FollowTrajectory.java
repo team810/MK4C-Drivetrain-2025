@@ -54,7 +54,7 @@ public class FollowTrajectory extends Command {
         yOutput = heading.getSin() * linearVelocity;
 
         ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, theta);
-        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, currentPose.getRotation());
+//        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, currentPose.getRotation());
 
         DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
         DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);

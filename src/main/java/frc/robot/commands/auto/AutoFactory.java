@@ -3,9 +3,16 @@ package frc.robot.commands.auto;
 import choreo.Choreo;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Superstructure;
+import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -49,32 +56,9 @@ public class AutoFactory {
     private SendableChooser<ReefOptions> secondScoreOptions = new SendableChooser<>();
     private SendableChooser<ReefOptions> thirdScoreOptions = new SendableChooser<>();
 
+    private Command autoCommand = new InstantCommand(() -> System.out.println("No auto loaded"));
+
     public AutoFactory() {
-
-        startOptions.setDefaultOption("Center", StartOptions.Center);
-        startOptions.addOption("Right", StartOptions.Right);
-        startOptions.addOption("Left", StartOptions.Left);
-
-        sourceOptions.setDefaultOption("Right", SourceOptions.Right);
-        sourceOptions.addOption("Left", SourceOptions.Left);
-
-        sourceOptions.onChange(event -> {updateOptions();});
-        startOptions.onChange(event -> {updateOptions();});
-
-        firstScoreOptions.setDefaultOption("None", ReefOptions.None);
-        secondScoreOptions.setDefaultOption("None", ReefOptions.None);
-        thirdScoreOptions.setDefaultOption("None", ReefOptions.None);
-
-        SmartDashboard.clearPersistent("Starting Location");
-        SmartDashboard.putData("Starting Location", startOptions);
-        SmartDashboard.clearPersistent("Source Location");
-        SmartDashboard.putData("Source Location", sourceOptions);
-
-        SmartDashboard.putData("First Score", firstScoreOptions);
-        SmartDashboard.putData("Second Score", secondScoreOptions);
-        SmartDashboard.putData("Third Score", thirdScoreOptions);
-
-        updateOptions();
 
         System.out.println("Trajectory Loading Started");
         double startTime = Timer.getFPGATimestamp();
@@ -131,11 +115,33 @@ public class AutoFactory {
         loadTrajectory("RS_H");
 
         System.out.println("Trajectory loading finished : " + (Timer.getFPGATimestamp() - startTime));
+
+        startOptions.setDefaultOption("Center", StartOptions.Center);
+        startOptions.addOption("Right", StartOptions.Right);
+        startOptions.addOption("Left", StartOptions.Left);
+
+        sourceOptions.setDefaultOption("Right", SourceOptions.Right);
+        sourceOptions.addOption("Left", SourceOptions.Left);
+
+        sourceOptions.onChange(event -> {updateOptions(); generateAuto();});
+        startOptions.onChange(event -> {updateOptions(); generateAuto();});
+
+        firstScoreOptions.setDefaultOption("H", ReefOptions.H);
+        secondScoreOptions.setDefaultOption("H", ReefOptions.H);
+        thirdScoreOptions.setDefaultOption("H", ReefOptions.H);
+
+        SmartDashboard.putData("Starting Location", startOptions);
+        SmartDashboard.putData("Source Location", sourceOptions);
+
+        SmartDashboard.putData("First Score", firstScoreOptions);
+        SmartDashboard.putData("Second Score", secondScoreOptions);
+        SmartDashboard.putData("Third Score", thirdScoreOptions);
+
+        updateOptions();
+
     }
 
     private void setLeftSecondAndThirdOptions() {
-        secondScoreOptions = new SendableChooser<>();
-        thirdScoreOptions = new SendableChooser<>();
 
         secondScoreOptions.addOption("A", ReefOptions.A);
         secondScoreOptions.addOption("B", ReefOptions.B);
@@ -157,10 +163,7 @@ public class AutoFactory {
     }
 
     private void setRightSecondAndThirdOptions() {
-
-        secondScoreOptions = new SendableChooser<>();
-        thirdScoreOptions = new SendableChooser<>();
-
+        System.out.println("No");
         secondScoreOptions.addOption("A", ReefOptions.A);
         secondScoreOptions.addOption("B", ReefOptions.B);
         secondScoreOptions.addOption("C", ReefOptions.C);
@@ -181,7 +184,6 @@ public class AutoFactory {
     }
 
     private void updateOptions() {
-
         firstScoreOptions.close();
         secondScoreOptions.close();
         thirdScoreOptions.close();
@@ -192,6 +194,8 @@ public class AutoFactory {
         SourceOptions sourceSelection = sourceOptions.getSelected();
 
         firstScoreOptions = new SendableChooser<>();
+        secondScoreOptions = new SendableChooser<>();
+        thirdScoreOptions = new SendableChooser<>();
 
         switch (startSelection) {
             case Left : {
@@ -248,6 +252,7 @@ public class AutoFactory {
                         firstScoreOptions.addOption("I", ReefOptions.I);
                         firstScoreOptions.addOption("J", ReefOptions.J);
                         setLeftSecondAndThirdOptions();
+                        break;
                     }
                     case Right: {
                         /*
@@ -262,6 +267,7 @@ public class AutoFactory {
                         firstScoreOptions.addOption("F", ReefOptions.F);
                         firstScoreOptions.addOption("G", ReefOptions.G);
                         firstScoreOptions.addOption("H", ReefOptions.H);
+                        break;
                     }
                 }
                 break;
@@ -310,10 +316,93 @@ public class AutoFactory {
         SmartDashboard.putData("Second Score", secondScoreOptions);
         SmartDashboard.putData("Third Score", thirdScoreOptions);
         SmartDashboard.updateValues();
+
+        firstScoreOptions.onChange(event -> {generateAuto();});
+        secondScoreOptions.onChange(event -> {generateAuto();});
+        thirdScoreOptions.onChange(event -> {generateAuto();});
     }
 
     private void generateAuto() {
+        StartOptions startSelection = startOptions.getSelected();
+        SourceOptions sourceSelection = sourceOptions.getSelected();
 
+        ReefOptions reefTarget1 = firstScoreOptions.getSelected();
+        ReefOptions reefTarget2 = secondScoreOptions.getSelected();
+        ReefOptions reefTarget3 = thirdScoreOptions.getSelected();
+        String startingLocation = "";
+        switch (startSelection) {
+            case Left : {
+                startingLocation = "LST";
+                break;
+            }
+            case Right : {
+                startingLocation = "RST";
+                break;
+            }
+            case Center : {
+                startingLocation = "CST";
+                break;
+            }
+        }
+        String sourceLocation = "";
+        switch (sourceSelection) {
+            case Left: {
+                sourceLocation = "LS";
+                break;
+            }
+            case Right: {
+                sourceLocation = "RS";
+                break;
+            }
+        }
+
+        String startPath = startingLocation + "_" + reefTarget1.toString();
+        String toSource1 = reefTarget1.toString() + "_" + sourceLocation;
+        String sourceTo2 = sourceLocation + "_" + reefTarget2.toString();
+        String toSource2 = reefTarget2.toString() + "_" + sourceLocation;
+        String sourceTo3 = sourceLocation + "_" + reefTarget3.toString();
+        Trajectory<SwerveSample> part1;
+        Trajectory<SwerveSample> part2;
+        Trajectory<SwerveSample> part3;
+        Trajectory<SwerveSample> part4;
+        Trajectory<SwerveSample> part5;
+        if (Superstructure.getInstance().getAlliance() == DriverStation.Alliance.Blue) {
+            part1 = trajectoriesBlue.get(startPath);
+            part2 = trajectoriesBlue.get(toSource1);
+            part3 = trajectoriesBlue.get(sourceTo2);
+            part4 = trajectoriesBlue.get(toSource2);
+            part5 = trajectoriesBlue.get(sourceTo3);
+        }else{
+            part1 = trajectoriesRed.get(startPath);
+            part2 = trajectoriesRed.get(toSource1);
+            part3 = trajectoriesRed.get(sourceTo2);
+            part4 = trajectoriesRed.get(toSource2);
+            part5 = trajectoriesRed.get(sourceTo3);
+        }
+
+        DrivetrainSubsystem.getInstance().resetPose(part1.getInitialPose(false).get());
+
+        autoCommand = new SequentialCommandGroup(
+                new FollowTrajectory(part1),
+                new InstantCommand(() -> System.out.println("Score 1")),
+                new WaitCommand(1.5),
+                new FollowTrajectory(part2),
+                new WaitCommand(1.5),
+                new InstantCommand(() -> System.out.println("Pickup from source")),
+                new WaitCommand(1.5),
+                new FollowTrajectory(part3),
+                new InstantCommand(() -> System.out.println("Score 2")),
+                new WaitCommand(1.5),
+                new FollowTrajectory(part4),
+                new InstantCommand(() -> System.out.println("Pickup from source")),
+                new WaitCommand(1.5),
+                new FollowTrajectory(part5),
+                new InstantCommand(() -> System.out.println("Score 3"))
+        );
+    }
+
+    public Command getAutoCommand() {
+        return autoCommand;
     }
 
     public void loadTrajectory(String trajectoryName) {

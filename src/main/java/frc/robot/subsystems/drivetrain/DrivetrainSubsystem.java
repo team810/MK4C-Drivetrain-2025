@@ -20,6 +20,7 @@ import frc.robot.Robot;
 import frc.robot.Superstructure;
 import frc.robot.lib.AdvancedSubsystem;
 import frc.robot.lib.LimelightHelpers;
+import org.littletonrobotics.junction.Logger;
 
 import java.util.ArrayList;
 
@@ -151,6 +152,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         }
 
         currentStates = new SwerveModuleState[]{frontLeft.getCurrentState(), frontRight.getCurrentState(), backLeft.getCurrentState(), backRight.getCurrentState()};
+
+        Logger.recordOutput("RobotPose", getPose());
     }
 
     @Override
