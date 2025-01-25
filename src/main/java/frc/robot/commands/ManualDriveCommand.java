@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -82,15 +83,15 @@ public class ManualDriveCommand extends Command {
         xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION); // Fix to match the actual constants of the drivetrain
         yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
 
-        velocityLimiter = new SlewRateLimiter(6);
+        velocityLimiter = new SlewRateLimiter(4, 10000, 0);
 
-        xAlignController = new PIDController(4, 0, 0);
-        yAlignController = new PIDController(4, 0, 0);
+        xAlignController = new PIDController(3.5, 0, 0);
+        yAlignController = new PIDController(3.5, 0, 0);
         xAlignController.setTolerance(.02);
         yAlignController.setTolerance(.02);
-        omegaAlignController = new PIDController(7, 0, 0);
+        omegaAlignController = new PIDController(2.5, 0, 0);
         omegaAlignController.enableContinuousInput(-Math.PI, Math.PI);
-        omegaAlignController.setTolerance(Math.toRadians(1));
+        omegaAlignController.setTolerance(Math.toRadians(.2));
 
         driveXVelocity = IO.getJoystickValue(Controls.driveXVelocity);
         driveYVelocity = IO.getJoystickValue(Controls.driveYVelocity);
@@ -208,7 +209,7 @@ public class ManualDriveCommand extends Command {
                 hasBeenZero = false;
             }
 
-            if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 15) {
+            if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 20) {
                 verticalVelocity = xLimiter.calculate(verticalVelocity);
                 horizontalVelocity = yLimiter.calculate(horizontalVelocity);
 
@@ -221,7 +222,7 @@ public class ManualDriveCommand extends Command {
                 verticalVelocity = xLimiter.calculate(verticalVelocity);
                 horizontalVelocity = yLimiter.calculate(horizontalVelocity);
                 ChassisSpeeds targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
-//                targetSpeeds = limitSpeeds(targetSpeeds);
+                targetSpeeds = limitSpeeds(targetSpeeds);
 
                 DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
                 DrivetrainSubsystem.getInstance().setVelocityFOC(targetSpeeds);
@@ -293,7 +294,7 @@ public class ManualDriveCommand extends Command {
             Pose2d currentPose = DrivetrainSubsystem.getInstance().getPose();
             Pose2d targetPose = new Pose2d();
             if (leftSourceB) {
-                targetPose = new Pose2d(1.6,7.3, new Rotation2d(2.223));
+                targetPose = new Pose2d(1.2319,6.931853294372559 , new Rotation2d(2.223));
             }else if (rightSourceB){
                 targetPose = new Pose2d(1.6, .719, new Rotation2d(-2.223));
             }
@@ -320,7 +321,7 @@ public class ManualDriveCommand extends Command {
         double linearProportion = linearVelocity / totalLinearVelocity;
 
         totalLinearVelocity = MathUtil.clamp(totalLinearVelocity, -DrivetrainConstants.MAX_VELOCITY, DrivetrainConstants.MAX_VELOCITY);
-        totalLinearVelocity = velocityLimiter.calculate(totalLinearVelocity);
+//        totalLinearVelocity = velocityLimiter.calculate(totalLinearVelocity); // This is just making the circle problem worse
 
         double limitedLinearVelocity = totalLinearVelocity * linearProportion;
 

@@ -4,7 +4,6 @@ import choreo.Choreo;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -59,9 +58,9 @@ public class AutoFactory {
     private Command autoCommand = new InstantCommand(() -> System.out.println("No auto loaded"));
 
     public AutoFactory() {
-
-        System.out.println("Trajectory Loading Started");
-        double startTime = Timer.getFPGATimestamp();
+        trajectoriesRed.clear();
+        trajectoriesBlue.clear();
+        
         loadTrajectory("A_LS");
         loadTrajectory("A_RS");
         loadTrajectory("B_LS");
@@ -114,8 +113,6 @@ public class AutoFactory {
         loadTrajectory("RS_G");
         loadTrajectory("RS_H");
 
-        System.out.println("Trajectory loading finished : " + (Timer.getFPGATimestamp() - startTime));
-
         startOptions.setDefaultOption("Center", StartOptions.Center);
         startOptions.addOption("Right", StartOptions.Right);
         startOptions.addOption("Left", StartOptions.Left);
@@ -138,7 +135,6 @@ public class AutoFactory {
         SmartDashboard.putData("Third Score", thirdScoreOptions);
 
         updateOptions();
-
     }
 
     private void setLeftSecondAndThirdOptions() {
@@ -385,20 +381,19 @@ public class AutoFactory {
         DrivetrainSubsystem.getInstance().resetPose(part1.getInitialPose(false).get());
 
         autoCommand = new SequentialCommandGroup(
-                new FollowTrajectory(part1),
+                generateFollowTrajectoryCommand(part1),
                 new InstantCommand(() -> System.out.println("Score 1")),
-                new WaitCommand(1.5),
-                new FollowTrajectory(part2),
-                new WaitCommand(1.5),
+                new WaitCommand(1),
+                generateFollowTrajectoryCommand(part2),
+                new WaitCommand(1),
                 new InstantCommand(() -> System.out.println("Pickup from source")),
-                new WaitCommand(1.5),
-                new FollowTrajectory(part3),
+                generateFollowTrajectoryCommand(part3),
                 new InstantCommand(() -> System.out.println("Score 2")),
-                new WaitCommand(1.5),
-                new FollowTrajectory(part4),
+                new WaitCommand(1),
+                generateFollowTrajectoryCommand(part4),
                 new InstantCommand(() -> System.out.println("Pickup from source")),
-                new WaitCommand(1.5),
-                new FollowTrajectory(part5),
+                new WaitCommand(1),
+                generateFollowTrajectoryCommand(part5),
                 new InstantCommand(() -> System.out.println("Score 3"))
         );
     }
@@ -416,5 +411,12 @@ public class AutoFactory {
         }else{
             System.out.println("Trajectory not found: " + trajectoryName);
         }
+    }
+
+    private Command generateFollowTrajectoryCommand(Trajectory<SwerveSample> trajectory) {
+        return new SequentialCommandGroup(
+                new FollowTrajectory(trajectory),
+                new GoToPose(trajectory.getFinalPose(false).get())
+        );
     }
 }

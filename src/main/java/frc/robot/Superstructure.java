@@ -13,21 +13,23 @@ import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class Superstructure {
-    private static Superstructure instance;
+    private static final Superstructure instance = new Superstructure();
     private DriverStation.Alliance alliance;
-    private final AutoFactory autoFactory;
+
 
 
     public Superstructure() {
-        autoFactory = new AutoFactory();
-        alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
-    }
 
-    public void initialize() {
         IO.Initialize(IO.PrimaryDriverProfiles.Leo,IO.SecondaryDriverProfiles.KnollController);
         DrivetrainSubsystem.getInstance();
         DrivetrainSubsystem.getInstance().resetPose(new Pose2d(0, 0, new Rotation2d(0)));
         VisionSubsystem.getInstance();
+
+        alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
+    }
+
+    public void initialize() {
+
     }
 
     public void configureActions() {
@@ -48,7 +50,7 @@ public class Superstructure {
     }
 
     public void autonomousInit() {
-        CommandScheduler.getInstance().schedule(autoFactory.getAutoCommand());
+
     }
 
     public DriverStation.Alliance getAlliance() {
@@ -56,9 +58,6 @@ public class Superstructure {
     }
 
     public static Superstructure getInstance() {
-        if (instance == null) {
-            instance = new Superstructure();
-        }
         return instance;
     }
 }

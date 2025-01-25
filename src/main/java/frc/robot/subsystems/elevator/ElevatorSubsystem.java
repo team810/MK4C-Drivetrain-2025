@@ -36,7 +36,6 @@ public class ElevatorSubsystem extends AdvancedSubsystem {
         elevator.setElevator(elevatorHeights.get(currentState));
     }
 
-    @Logged (name = "Elevator Current State")
     public ElevatorState getElevatorState() {return currentState;}
 
     @Override

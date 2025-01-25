@@ -10,42 +10,36 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 
-public class FollowTrajectory extends Command {
-    private final Timer timer;
-    private final Trajectory<SwerveSample> trajectory;
-
+public class GoToPose extends Command {
     private final PIDController xController;
     private final PIDController yController;
     private final PIDController thetaController;
 
-    public FollowTrajectory(Trajectory<SwerveSample> trajectory) {
-        timer = new Timer();
+    private final Pose2d finalPose;
 
+    public GoToPose(Pose2d finalPose) {
         xController = new PIDController(5,0,0);
         yController = new PIDController(5,0,0);
         thetaController = new PIDController(5,0,0);
 
-        this.trajectory = trajectory;
+        xController.setSetpoint(.03);
+        yController.setSetpoint(.03);
+        thetaController.setSetpoint(.03);
+
+        this.finalPose = finalPose;
     }
 
     @Override
     public void initialize() {
-        timer.start();
     }
 
     @Override
     public void execute() {
-        SwerveSample swerveSample;
-        if (!timer.hasElapsed(trajectory.getTotalTime())) {
-            swerveSample = trajectory.sampleAt(timer.get(), false).get();
-        }else{
-            swerveSample = trajectory.getFinalSample(false).get();
-        }
         Pose2d currentPose = DrivetrainSubsystem.getInstance().getPose();
 
-        double xOutput = xController.calculate(currentPose.getX(), swerveSample.getPose().getX()) + swerveSample.vx;
-        double yOutput = yController.calculate(currentPose.getY(), swerveSample.getPose().getY()) + swerveSample.vy;
-        double theta = thetaController.calculate(currentPose.getRotation().getRadians(), swerveSample.getPose().getRotation().getRadians()) + swerveSample.omega;
+        double xOutput = xController.calculate(currentPose.getX(),finalPose.getX());
+        double yOutput = yController.calculate(currentPose.getY(), finalPose.getY());
+        double theta = thetaController.calculate(currentPose.getRotation().getRadians(), finalPose.getRotation().getRadians());
 
         double linearVelocity = Math.sqrt((xOutput * xOutput) + (yOutput * yOutput));
         Rotation2d heading = new Rotation2d(xOutput, yOutput);
@@ -54,7 +48,6 @@ public class FollowTrajectory extends Command {
         yOutput = heading.getSin() * linearVelocity;
 
         ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, theta);
-//        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, currentPose.getRotation());
 
         DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
         DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
@@ -62,13 +55,12 @@ public class FollowTrajectory extends Command {
 
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(trajectory.getTotalTime());
+        return xController.atSetpoint() && yController.atSetpoint() && thetaController.atSetpoint();
     }
 
     @Override
     public void end(boolean interrupted) {
         DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.off);
     }
-
 
 }

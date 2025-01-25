@@ -18,6 +18,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Robot;
+import org.littletonrobotics.junction.Logger;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -101,6 +102,18 @@ public class KrakenNeoModule implements SwerveModuleIO{
     public void readPeriodic(Observer.ModuleObservationRaw data) {
         rawInput = data;
         targetState = new SwerveModuleState();
+
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "VelocityRPS", rawInput.velocity);
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "Position", getPosition());
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "Velocity", getVelocity());
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "Acceleration", getAcceleration());
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "AppliedDriveVoltage", rawInput.appliedVoltage);
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "DriveCurrent", rawInput.current);
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "Force", getForce());
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "Torque", getTorque());
+
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "Theta", getTheta());
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "Omega", getOmega());
     }
 
     @Override
@@ -139,12 +152,10 @@ public class KrakenNeoModule implements SwerveModuleIO{
         steerAppliedVoltage = MathUtil.clamp(steerAppliedVoltage, -12, 12);
         steerMotor.setVoltage(steerAppliedVoltage);
 
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "AppliedState", targetState);
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "AppliedVelocityRPM", velocity);
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "Target Angle", targetAngle);
-//        Logger.recordOutput("Drivetrain/" + idString + "/" + "AppliedSteerVoltage", steerAppliedVoltage);
-
-
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "AppliedState", targetState);
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "AppliedVelocityRPM", velocity);
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "Target Angle", targetAngle);
+        Logger.recordOutput("Drivetrain/" + idString + "/" + "AppliedSteerVoltage", steerAppliedVoltage);
     }
 
     @Override
