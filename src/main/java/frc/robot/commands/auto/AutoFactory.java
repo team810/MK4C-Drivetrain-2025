@@ -148,6 +148,8 @@ public class AutoFactory {
         secondScoreOptions.addOption("K", ReefOptions.K);
         secondScoreOptions.addOption("L", ReefOptions.L);
 
+        secondScoreOptions.setDefaultOption("None", ReefOptions.None);
+
         thirdScoreOptions.addOption("A", ReefOptions.A);
         thirdScoreOptions.addOption("B", ReefOptions.B);
         thirdScoreOptions.addOption("G", ReefOptions.G);
@@ -156,6 +158,8 @@ public class AutoFactory {
         thirdScoreOptions.addOption("J", ReefOptions.J);
         thirdScoreOptions.addOption("K", ReefOptions.K);
         thirdScoreOptions.addOption("L", ReefOptions.L);
+
+        thirdScoreOptions.setDefaultOption("None", ReefOptions.None);
     }
 
     private void setRightSecondAndThirdOptions() {
@@ -168,6 +172,8 @@ public class AutoFactory {
         secondScoreOptions.addOption("G", ReefOptions.G);
         secondScoreOptions.addOption("H", ReefOptions.H);
 
+        secondScoreOptions.setDefaultOption("None", ReefOptions.None);
+
         thirdScoreOptions.addOption("A", ReefOptions.A);
         thirdScoreOptions.addOption("B", ReefOptions.B);
         thirdScoreOptions.addOption("C", ReefOptions.C);
@@ -176,6 +182,8 @@ public class AutoFactory {
         thirdScoreOptions.addOption("F", ReefOptions.F);
         thirdScoreOptions.addOption("G", ReefOptions.G);
         thirdScoreOptions.addOption("H", ReefOptions.H);
+
+        thirdScoreOptions.setDefaultOption("None", ReefOptions.None);
     }
 
     private void updateOptions() {
@@ -351,9 +359,11 @@ public class AutoFactory {
             }
         }
         if (reefTarget1 == null || reefTarget2 == null || reefTarget3 == null) {
+            System.out.println("Error Generating Auto");
             autoCommand = new InstantCommand(() -> System.out.println("Problem with auto"));
             return;
         }
+
         String startPath = startingLocation + "_" + reefTarget1.toString();
         String toSource1 = reefTarget1.toString() + "_" + sourceLocation;
         String sourceTo2 = sourceLocation + "_" + reefTarget2.toString();
@@ -379,7 +389,6 @@ public class AutoFactory {
         }
 
         DrivetrainSubsystem.getInstance().resetPose(part1.getInitialPose(false).get());
-
         autoCommand = new SequentialCommandGroup(
                 generateFollowTrajectoryCommand(part1),
                 new InstantCommand(() -> System.out.println("Score 1")),

@@ -20,7 +20,8 @@ public class GoToPose extends Command {
     public GoToPose(Pose2d finalPose) {
         xController = new PIDController(5,0,0);
         yController = new PIDController(5,0,0);
-        thetaController = new PIDController(5,0,0);
+        thetaController = new PIDController(2,0,0);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         xController.setSetpoint(.03);
         yController.setSetpoint(.03);

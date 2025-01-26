@@ -2,12 +2,14 @@ package frc.robot.commands.auto;
 
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.drivetrain.DrivetrainConstants;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 
 public class FollowTrajectory extends Command {
@@ -23,7 +25,11 @@ public class FollowTrajectory extends Command {
 
         xController = new PIDController(5,0,0);
         yController = new PIDController(5,0,0);
-        thetaController = new PIDController(5,0,0);
+        thetaController = new PIDController(10,0,0);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        thetaController.setTolerance(Math.toRadians(.5));
+        xController.setTolerance(.02);
+        yController.setTolerance(.02);
 
         this.trajectory = trajectory;
     }
@@ -48,13 +54,18 @@ public class FollowTrajectory extends Command {
         double theta = thetaController.calculate(currentPose.getRotation().getRadians(), swerveSample.getPose().getRotation().getRadians()) + swerveSample.omega;
 
         double linearVelocity = Math.sqrt((xOutput * xOutput) + (yOutput * yOutput));
-        Rotation2d heading = new Rotation2d(xOutput, yOutput);
+        linearVelocity = MathUtil.clamp(linearVelocity, -DrivetrainConstants.MAX_VELOCITY, DrivetrainConstants.MAX_VELOCITY);
 
-        xOutput = heading.getCos() * linearVelocity;
-        yOutput = heading.getSin() * linearVelocity;
+        if (xOutput == 0 && yOutput == 0) {
+            xOutput = 0;
+            yOutput = 0;
+        }else{
+            Rotation2d heading = new Rotation2d(xOutput, yOutput);
+            xOutput = heading.getCos() * linearVelocity;
+            yOutput = heading.getSin() * linearVelocity;
+        }
 
         ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, theta);
-//        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, currentPose.getRotation());
 
         DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
         DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
