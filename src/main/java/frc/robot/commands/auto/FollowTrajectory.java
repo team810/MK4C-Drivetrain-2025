@@ -65,10 +65,14 @@ public class FollowTrajectory extends Command {
             yOutput = heading.getSin() * linearVelocity;
         }
 
+        DrivetrainSubsystem.getInstance().setTargetPoseLog(swerveSample.getPose(), swerveSample.getPose().getX(),swerveSample.getPose().getY(), swerveSample.getPose().getRotation().getRadians(), xOutput,yOutput,theta,xController.atSetpoint(),yController.atSetpoint(),thetaController.atSetpoint(), swerveSample.vx, swerveSample.vy, swerveSample.omega);
+        DrivetrainSubsystem.getInstance().setPositionalControl(true);
+
         ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, theta);
 
         DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
         DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
+
     }
 
     @Override

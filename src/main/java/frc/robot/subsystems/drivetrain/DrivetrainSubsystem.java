@@ -54,6 +54,20 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
     private SwerveModuleState[] currentStates;
 
     private Pose2d visionPose = new Pose2d();
+    private Pose2d targetPose;
+    private double xSetpoint;
+    private double ySetpoint;
+    private double thetaSetpoint;
+    private double xOutput;
+    private double yOutput;
+    private double thetaOutput;
+    private boolean xAtSetpoint;
+    private boolean yAtSetpoint;
+    private boolean thetaAtSetpoint;
+    private double xFeedforward;
+    private double yFeedForward;
+    private double thetaFeedforward;
+    private boolean positionalControlEnabled;
 
     private DrivetrainSubsystem() {
 
@@ -99,6 +113,21 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_REEF4,.2921,0,.2852,0,0,0);
             LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_REEF3, .3175,-.1524,.22225,0,0,0);
         }
+
+        targetPose = new Pose2d();
+        xSetpoint = 0;
+        ySetpoint = 0;
+        thetaSetpoint = 0;
+        xOutput = 0;
+        yOutput = 0;
+        thetaOutput = 0;
+        xAtSetpoint = false;
+        yAtSetpoint = false;
+        thetaAtSetpoint = false;
+        xFeedforward = 0;
+        yFeedForward = 0;
+        thetaFeedforward = 0;
+        positionalControlEnabled = false;
     }
 
 
@@ -107,7 +136,6 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         if (Robot.isReal() && DrivetrainConstants.USING_VISION)
         {
             boolean reject = false;
-
             LimelightHelpers.SetRobotOrientation(cam, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
             LimelightHelpers.PoseEstimate results = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cam);
 
@@ -203,6 +231,28 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
         Logger.recordOutput("Drivetrain/TargetSpeeds", targetSpeed);
         Logger.recordOutput("Drivetrain/TargetModuleStates", targetStates);
+
+        Logger.recordOutput("Drivetrain/PositionalControl/x/setpoint", xSetpoint);
+        Logger.recordOutput("Drivetrain/PositionalControl/x/current", getPose().getX());
+        Logger.recordOutput("Drivetrain/PositionalControl/x/atSetpoint", xAtSetpoint);
+        Logger.recordOutput("Drivetrain/PositionalControl/x/output", xOutput);
+        Logger.recordOutput("Drivetrain/PositionalControl/x/ff", xFeedforward);
+
+        Logger.recordOutput("Drivetrain/PositionalControl/y/setpoint", ySetpoint);
+        Logger.recordOutput("Drivetrain/PositionalControl/y/current", getPose().getY());
+        Logger.recordOutput("Drivetrain/PositionalControl/y/atSetpoint", yAtSetpoint);
+        Logger.recordOutput("Drivetrain/PositionalControl/y/output", yOutput);
+        Logger.recordOutput("Drivetrain/PositionalControl/y/ff", yFeedForward);
+
+        Logger.recordOutput("Drivetrain/PositionalControl/theta/setpoint", thetaSetpoint);
+        Logger.recordOutput("Drivetrain/PositionalControl/theta/current", getPose().getRotation().getRadians());
+        Logger.recordOutput("Drivetrain/PositionalControl/theta/atSetpoint", thetaAtSetpoint);
+        Logger.recordOutput("Drivetrain/PositionalControl/theta/output", thetaOutput);
+        Logger.recordOutput("Drivetrain/PositionalControl/theta/ff", thetaFeedforward);
+
+        Logger.recordOutput("Drivetrain/PositionalControl/targetPose", targetPose);
+        Logger.recordOutput("Drivetrain/positionalControl", positionalControlEnabled);
+
     }
 
     @Override
@@ -233,6 +283,31 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
     public Pose2d getPose() {
         return odometry.getEstimatedPosition();
+    }
+
+    // This is for logging and debugging
+    public void setTargetPoseLog(Pose2d targetPose, double xSetpoint, double ySetpoint, double thetaSetpoint, double xOutput, double yOutput, double thetaOutput, boolean xAtSetpoint, boolean yAtSetpoint, boolean thetaAtSetpoint) {
+        this.targetPose = targetPose;
+        this.xSetpoint = xSetpoint;
+        this.ySetpoint = ySetpoint;
+        this.thetaSetpoint = thetaSetpoint;
+        this.xOutput = xOutput;
+        this.yOutput = yOutput;
+        this.thetaOutput = thetaOutput;
+        this.xAtSetpoint = xAtSetpoint;
+        this.yAtSetpoint = yAtSetpoint;
+        this.thetaAtSetpoint = thetaAtSetpoint;
+    }
+    public void setTargetPoseLog(Pose2d targetPose, double xSetpoint, double ySetpoint, double thetaSetpoint, double xOutput, double yOutput, double thetaOutput, boolean xAtSetpoint, boolean yAtSetpoint, boolean thetaAtSetpoint, double xFeedforward, double yFeedForward, double thetaFeedforward)
+    {
+        setTargetPoseLog(targetPose,xSetpoint,ySetpoint,thetaSetpoint,xOutput,yOutput,thetaOutput,xAtSetpoint,yAtSetpoint,thetaAtSetpoint);
+        this.xFeedforward = xFeedforward;
+        this.yFeedForward = yFeedForward;
+        this.thetaFeedforward = thetaFeedforward;
+    }
+
+    public void setPositionalControl(boolean enabled) {
+        positionalControlEnabled = enabled;
     }
 
     public void resetGyro() {

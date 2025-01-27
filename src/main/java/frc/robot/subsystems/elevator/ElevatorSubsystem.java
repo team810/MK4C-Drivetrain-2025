@@ -1,6 +1,5 @@
 package frc.robot.subsystems.elevator;
 
-import edu.wpi.first.epilogue.Logged;
 import frc.robot.Robot;
 import frc.robot.lib.AdvancedSubsystem;
 

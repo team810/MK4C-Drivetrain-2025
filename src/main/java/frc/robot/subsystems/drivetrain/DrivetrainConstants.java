@@ -264,5 +264,5 @@ public class DrivetrainConstants {
     }
 
     public static Measure<DistanceUnit> INTERLOPE_TOLERANCE = Distance.ofBaseUnits(.05, Meters);
-    public static Measure<AngleUnit> INTERLOPE_ANGlE_TOLERANCE = Angle.ofBaseUnits(3,Degrees);
+    public static Measure<AngleUnit> INTERLOPE_ANGlE_TOLERANCE = Angle.ofBaseUnits(.5,Degrees);
 }

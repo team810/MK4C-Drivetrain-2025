@@ -229,7 +229,6 @@ public class ManualDriveCommand extends Command {
             }else{
                 omegaVelocity = omegaVelocity * DrivetrainConstants.MAX_ANGULAR_VELOCITY;
 
-
                 verticalVelocity = xLimiter.calculate(verticalVelocity);
                 horizontalVelocity = yLimiter.calculate(horizontalVelocity);
                 ChassisSpeeds targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
@@ -240,6 +239,8 @@ public class ManualDriveCommand extends Command {
             }
 
             alignLastTick = false;
+
+            DrivetrainSubsystem.getInstance().setPositionalControl(false);
 
         } else if (left || right) {
 
@@ -293,12 +294,14 @@ public class ManualDriveCommand extends Command {
             double yOutput = yAlignController.calculate(currentPose.getY(), targetPose.getY());
             double omegaOutput = omegaAlignController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
 
+            DrivetrainSubsystem.getInstance().setTargetPoseLog(targetPose, targetPose.getX(),targetPose.getY(), targetPose.getRotation().getRadians(), xOutput,yOutput,omegaOutput,xAlignController.atSetpoint(),yAlignController.atSetpoint(),omegaAlignController.atSetpoint());
+            DrivetrainSubsystem.getInstance().setPositionalControl(true);
+
             ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, omegaOutput);
             speeds = limitSpeeds(speeds);
 
             DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
             DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
-
 
         } else {
             alignLastTick = false;
@@ -314,14 +317,15 @@ public class ManualDriveCommand extends Command {
             double yOutput = yAlignController.calculate(currentPose.getY(), targetPose.getY());
             double omegaOutput = omegaAlignController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
 
+            DrivetrainSubsystem.getInstance().setTargetPoseLog(targetPose, targetPose.getX(),targetPose.getY(), targetPose.getRotation().getRadians(), xOutput,yOutput,omegaOutput,xAlignController.atSetpoint(),yAlignController.atSetpoint(),omegaAlignController.atSetpoint());
+            DrivetrainSubsystem.getInstance().setPositionalControl(true);
+
             ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, omegaOutput);
             speeds = limitSpeeds(speeds);
 
             DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
             DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
         }
-
-        Logger.recordOutput("Target Pose", targetPose);
     }
 
     public ChassisSpeeds limitSpeeds(ChassisSpeeds speeds) {
