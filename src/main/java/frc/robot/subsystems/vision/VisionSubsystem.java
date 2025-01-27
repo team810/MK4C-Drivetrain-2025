@@ -1,6 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -25,6 +24,7 @@ public class VisionSubsystem extends AdvancedSubsystem {
 
     private Transform2d targetTransform = new Transform2d();
     private Pose2d targetPose = new Pose2d();
+
 
     public VisionSubsystem() {
         gpPoseList.add(new Pose2d(2.8914051055908203  , 7.087372779846191  , new Rotation2d()));
@@ -67,11 +67,9 @@ public class VisionSubsystem extends AdvancedSubsystem {
 
     }
 
-    @Logged (name = "Target Transformation")
     public Transform2d getTargetTransform() {
         return targetTransform;
     }
-    @Logged (name = "Target Pose FOC")
     public Pose2d getTargetPose() {
         return targetPose;
     }

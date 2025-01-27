@@ -4,7 +4,6 @@ import choreo.Choreo;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -59,9 +58,9 @@ public class AutoFactory {
     private Command autoCommand = new InstantCommand(() -> System.out.println("No auto loaded"));
 
     public AutoFactory() {
-
-        System.out.println("Trajectory Loading Started");
-        double startTime = Timer.getFPGATimestamp();
+        trajectoriesRed.clear();
+        trajectoriesBlue.clear();
+        
         loadTrajectory("A_LS");
         loadTrajectory("A_RS");
         loadTrajectory("B_LS");
@@ -114,8 +113,6 @@ public class AutoFactory {
         loadTrajectory("RS_G");
         loadTrajectory("RS_H");
 
-        System.out.println("Trajectory loading finished : " + (Timer.getFPGATimestamp() - startTime));
-
         startOptions.setDefaultOption("Center", StartOptions.Center);
         startOptions.addOption("Right", StartOptions.Right);
         startOptions.addOption("Left", StartOptions.Left);
@@ -138,7 +135,6 @@ public class AutoFactory {
         SmartDashboard.putData("Third Score", thirdScoreOptions);
 
         updateOptions();
-
     }
 
     private void setLeftSecondAndThirdOptions() {
@@ -152,6 +148,8 @@ public class AutoFactory {
         secondScoreOptions.addOption("K", ReefOptions.K);
         secondScoreOptions.addOption("L", ReefOptions.L);
 
+        secondScoreOptions.setDefaultOption("None", ReefOptions.None);
+
         thirdScoreOptions.addOption("A", ReefOptions.A);
         thirdScoreOptions.addOption("B", ReefOptions.B);
         thirdScoreOptions.addOption("G", ReefOptions.G);
@@ -160,6 +158,8 @@ public class AutoFactory {
         thirdScoreOptions.addOption("J", ReefOptions.J);
         thirdScoreOptions.addOption("K", ReefOptions.K);
         thirdScoreOptions.addOption("L", ReefOptions.L);
+
+        thirdScoreOptions.setDefaultOption("None", ReefOptions.None);
     }
 
     private void setRightSecondAndThirdOptions() {
@@ -172,6 +172,8 @@ public class AutoFactory {
         secondScoreOptions.addOption("G", ReefOptions.G);
         secondScoreOptions.addOption("H", ReefOptions.H);
 
+        secondScoreOptions.setDefaultOption("None", ReefOptions.None);
+
         thirdScoreOptions.addOption("A", ReefOptions.A);
         thirdScoreOptions.addOption("B", ReefOptions.B);
         thirdScoreOptions.addOption("C", ReefOptions.C);
@@ -180,6 +182,8 @@ public class AutoFactory {
         thirdScoreOptions.addOption("F", ReefOptions.F);
         thirdScoreOptions.addOption("G", ReefOptions.G);
         thirdScoreOptions.addOption("H", ReefOptions.H);
+
+        thirdScoreOptions.setDefaultOption("None", ReefOptions.None);
     }
 
     private void updateOptions() {
@@ -355,9 +359,11 @@ public class AutoFactory {
             }
         }
         if (reefTarget1 == null || reefTarget2 == null || reefTarget3 == null) {
+            System.out.println("Error Generating Auto");
             autoCommand = new InstantCommand(() -> System.out.println("Problem with auto"));
             return;
         }
+
         String startPath = startingLocation + "_" + reefTarget1.toString();
         String toSource1 = reefTarget1.toString() + "_" + sourceLocation;
         String sourceTo2 = sourceLocation + "_" + reefTarget2.toString();
@@ -383,22 +389,20 @@ public class AutoFactory {
         }
 
         DrivetrainSubsystem.getInstance().resetPose(part1.getInitialPose(false).get());
-
         autoCommand = new SequentialCommandGroup(
-                new FollowTrajectory(part1),
+                generateFollowTrajectoryCommand(part1),
                 new InstantCommand(() -> System.out.println("Score 1")),
-                new WaitCommand(1.5),
-                new FollowTrajectory(part2),
-                new WaitCommand(1.5),
+                new WaitCommand(1),
+                generateFollowTrajectoryCommand(part2),
+                new WaitCommand(1),
                 new InstantCommand(() -> System.out.println("Pickup from source")),
-                new WaitCommand(1.5),
-                new FollowTrajectory(part3),
+                generateFollowTrajectoryCommand(part3),
                 new InstantCommand(() -> System.out.println("Score 2")),
-                new WaitCommand(1.5),
-                new FollowTrajectory(part4),
+                new WaitCommand(1),
+                generateFollowTrajectoryCommand(part4),
                 new InstantCommand(() -> System.out.println("Pickup from source")),
-                new WaitCommand(1.5),
-                new FollowTrajectory(part5),
+                new WaitCommand(1),
+                generateFollowTrajectoryCommand(part5),
                 new InstantCommand(() -> System.out.println("Score 3"))
         );
     }
@@ -416,5 +420,12 @@ public class AutoFactory {
         }else{
             System.out.println("Trajectory not found: " + trajectoryName);
         }
+    }
+
+    private Command generateFollowTrajectoryCommand(Trajectory<SwerveSample> trajectory) {
+        return new SequentialCommandGroup(
+                new FollowTrajectory(trajectory),
+                new GoToPose(trajectory.getFinalPose(false).get())
+        );
     }
 }

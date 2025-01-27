@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -16,6 +17,7 @@ import frc.robot.IO.IO;
 import frc.robot.Superstructure;
 import frc.robot.subsystems.drivetrain.DrivetrainConstants;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
+import org.littletonrobotics.junction.Logger;
 
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
@@ -73,6 +75,9 @@ public class ManualDriveCommand extends Command {
     private final Pose2d FR_LEFT;
     private final Pose2d FR_RIGHT;
 
+    private final Pose2d LEFT_SOURCE;
+    private final Pose2d RIGHT_SOURCE;
+
     private Pose2d targetPose = new Pose2d();
     private boolean alignLastTick = false; // Was the code in align mode last tick
 
@@ -82,15 +87,15 @@ public class ManualDriveCommand extends Command {
         xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION); // Fix to match the actual constants of the drivetrain
         yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
 
-        velocityLimiter = new SlewRateLimiter(6);
+        velocityLimiter = new SlewRateLimiter(8);
 
-        xAlignController = new PIDController(4, 0, 0);
-        yAlignController = new PIDController(4, 0, 0);
+        xAlignController = new PIDController(3.5, 0, 0);
+        yAlignController = new PIDController(3.5, 0, 0);
         xAlignController.setTolerance(.02);
         yAlignController.setTolerance(.02);
         omegaAlignController = new PIDController(7, 0, 0);
         omegaAlignController.enableContinuousInput(-Math.PI, Math.PI);
-        omegaAlignController.setTolerance(Math.toRadians(1));
+        omegaAlignController.setTolerance(Math.toRadians(.2));
 
         driveXVelocity = IO.getJoystickValue(Controls.driveXVelocity);
         driveYVelocity = IO.getJoystickValue(Controls.driveYVelocity);
@@ -102,14 +107,41 @@ public class ManualDriveCommand extends Command {
         leftSource = IO.getButtonValue(Controls.leftSource);
         rightSource = IO.getButtonValue(Controls.rightSource);
 
-        if (Superstructure.getInstance().getAlliance().equals(DriverStation.Alliance.Blue)) {
-            reefSections.add(FieldConstants.BlueReef.F);
-            reefSections.add(FieldConstants.BlueReef.FL);
-            reefSections.add(FieldConstants.BlueReef.BL);
-            reefSections.add(FieldConstants.BlueReef.B);
-            reefSections.add(FieldConstants.BlueReef.BR);
-            reefSections.add(FieldConstants.BlueReef.FR);
+        if (Superstructure.getInstance().getAlliance().equals(DriverStation.Alliance.Red)) {
+            F = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.F);
+            F_LEFT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.F_LEFT);
+            F_RIGHT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.F_RIGHT);
 
+            FL = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.FL);
+            FL_LEFT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.FL_LEFT);
+            FL_RIGHT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.FL_RIGHT);
+
+            BL = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.BL);
+            BL_LEFT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.BL_LEFT);
+            BL_RIGHT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.BL_RIGHT);
+
+            B = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.B);
+            B_LEFT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.B_LEFT);
+            B_RIGHT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.B_RIGHT);
+
+            BR = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.BR);
+            BR_LEFT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.BR_LEFT);
+            BR_RIGHT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.BR_RIGHT);
+
+            FR = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.FR);
+            FR_LEFT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.FR_LEFT);
+            FR_RIGHT = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.FR_RIGHT);
+
+            LEFT_SOURCE = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.LEFT_SOURCE);
+            RIGHT_SOURCE = ChoreoAllianceFlipUtil.flip(FieldConstants.BlueReef.RIGHT_SOURCE);
+
+            reefSections.add(F);
+            reefSections.add(FL);
+            reefSections.add(BL);
+            reefSections.add(B);
+            reefSections.add(BR);
+            reefSections.add(FR);
+        }else{
             F = FieldConstants.BlueReef.F;
             F_LEFT = FieldConstants.BlueReef.F_LEFT;
             F_RIGHT = FieldConstants.BlueReef.F_RIGHT;
@@ -133,38 +165,18 @@ public class ManualDriveCommand extends Command {
             FR = FieldConstants.BlueReef.FR;
             FR_LEFT = FieldConstants.BlueReef.FR_LEFT;
             FR_RIGHT = FieldConstants.BlueReef.FR_RIGHT;
-        }else{
-            reefSections.add(FieldConstants.RedReef.F);
-            reefSections.add(FieldConstants.RedReef.FL);
-            reefSections.add(FieldConstants.RedReef.BL);
-            reefSections.add(FieldConstants.RedReef.B);
-            reefSections.add(FieldConstants.RedReef.BR);
-            reefSections.add(FieldConstants.RedReef.FR);
 
-            F = FieldConstants.RedReef.F;
-            F_LEFT = FieldConstants.RedReef.F_LEFT;
-            F_RIGHT = FieldConstants.RedReef.F_RIGHT;
+            LEFT_SOURCE = FieldConstants.BlueReef.LEFT_SOURCE;
+            RIGHT_SOURCE = FieldConstants.BlueReef.RIGHT_SOURCE;
 
-            FL = FieldConstants.RedReef.FL;
-            FL_LEFT = FieldConstants.RedReef.FL_LEFT;
-            FL_RIGHT = FieldConstants.RedReef.FL_RIGHT;
-
-            BL = FieldConstants.RedReef.BL;
-            BL_LEFT = FieldConstants.RedReef.BL_LEFT;
-            BL_RIGHT = FieldConstants.RedReef.BL_RIGHT;
-
-            B = FieldConstants.RedReef.B;
-            B_LEFT = FieldConstants.RedReef.B_LEFT;
-            B_RIGHT = FieldConstants.RedReef.B_RIGHT;
-
-            BR = FieldConstants.RedReef.BR;
-            BR_LEFT = FieldConstants.RedReef.BR_LEFT;
-            BR_RIGHT = FieldConstants.RedReef.BR_RIGHT;
-
-            FR = FieldConstants.RedReef.FR;
-            FR_LEFT = FieldConstants.RedReef.FR_LEFT;
-            FR_RIGHT = FieldConstants.RedReef.FR_RIGHT;
+            reefSections.add(FieldConstants.BlueReef.F);
+            reefSections.add(FieldConstants.BlueReef.FL);
+            reefSections.add(FieldConstants.BlueReef.BL);
+            reefSections.add(FieldConstants.BlueReef.B);
+            reefSections.add(FieldConstants.BlueReef.BR);
+            reefSections.add(FieldConstants.BlueReef.FR);
         }
+
 
         if (Superstructure.getInstance().getAlliance() == DriverStation.Alliance.Red)
         {
@@ -208,7 +220,7 @@ public class ManualDriveCommand extends Command {
                 hasBeenZero = false;
             }
 
-            if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 15) {
+            if (omegaVelocity == 0 && Math.abs(DrivetrainSubsystem.getInstance().getRate().in(Units.DegreesPerSecond)) < 20) {
                 verticalVelocity = xLimiter.calculate(verticalVelocity);
                 horizontalVelocity = yLimiter.calculate(horizontalVelocity);
 
@@ -221,7 +233,7 @@ public class ManualDriveCommand extends Command {
                 verticalVelocity = xLimiter.calculate(verticalVelocity);
                 horizontalVelocity = yLimiter.calculate(horizontalVelocity);
                 ChassisSpeeds targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
-//                targetSpeeds = limitSpeeds(targetSpeeds);
+                targetSpeeds = limitSpeeds(targetSpeeds);
 
                 DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
                 DrivetrainSubsystem.getInstance().setVelocityFOC(targetSpeeds);
@@ -291,11 +303,11 @@ public class ManualDriveCommand extends Command {
         } else {
             alignLastTick = false;
             Pose2d currentPose = DrivetrainSubsystem.getInstance().getPose();
-            Pose2d targetPose = new Pose2d();
+            Pose2d targetPose;
             if (leftSourceB) {
-                targetPose = new Pose2d(1.6,7.3, new Rotation2d(2.223));
-            }else if (rightSourceB){
-                targetPose = new Pose2d(1.6, .719, new Rotation2d(-2.223));
+                targetPose = LEFT_SOURCE;
+            }else {
+                targetPose = RIGHT_SOURCE;
             }
 
             double xOutput = xAlignController.calculate(currentPose.getX(), targetPose.getX());
@@ -308,6 +320,8 @@ public class ManualDriveCommand extends Command {
             DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
             DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
         }
+
+        Logger.recordOutput("Target Pose", targetPose);
     }
 
     public ChassisSpeeds limitSpeeds(ChassisSpeeds speeds) {
@@ -320,7 +334,7 @@ public class ManualDriveCommand extends Command {
         double linearProportion = linearVelocity / totalLinearVelocity;
 
         totalLinearVelocity = MathUtil.clamp(totalLinearVelocity, -DrivetrainConstants.MAX_VELOCITY, DrivetrainConstants.MAX_VELOCITY);
-        totalLinearVelocity = velocityLimiter.calculate(totalLinearVelocity);
+//        totalLinearVelocity = velocityLimiter.calculate(totalLinearVelocity);
 
         double limitedLinearVelocity = totalLinearVelocity * linearProportion;
 

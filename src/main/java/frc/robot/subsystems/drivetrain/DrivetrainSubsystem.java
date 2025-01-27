@@ -95,43 +95,25 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
         if (DrivetrainConstants.USING_VISION) {
             // Change the camera pose relative to robot center (x forward, y left, z up, degrees)
-            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_NAME, Units.inchesToMeters(11), Units.inchesToMeters(1),Units.inchesToMeters(11.25),-4,0,0);
+            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_SOURCE,-0.1905, 0,.4445,-2.6,39,0);
+            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_REEF4,.2921,0,.2852,0,0,0);
+            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_REEF3, .3175,-.1524,.22225,0,0,0);
         }
     }
 
 
-    @Override
-    public void readPeriodic() {
-        var moduleObservations = observer.getModuleObservations();
-        frontLeft.readPeriodic(moduleObservations[0]);
-        frontRight.readPeriodic(moduleObservations[1]);
-        backLeft.readPeriodic(moduleObservations[2]);
-        backRight.readPeriodic(moduleObservations[3]);
-
-        ArrayList<Observer.SwerveObservation> observations = observer.getObservations();
-        for (int i = 0; i < observations.size(); i++) {
-            odometry.updateWithTime(
-                    observations.get(i).timestamp,
-                    observations.get(i).yaw,
-                    new SwerveModulePosition[]{
-                            observations.get(i).frontLeft,
-                            observations.get(i).frontRight,
-                            observations.get(i).backLeft,
-                            observations.get(i).backRight
-                    });
-        }
-        observer.clearObservations();
+    private void addVision(String cam) {
 
         if (Robot.isReal() && DrivetrainConstants.USING_VISION)
         {
             boolean reject = false;
 
-            LimelightHelpers.SetRobotOrientation(DrivetrainConstants.LIME_LIGHT_NAME, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
-            LimelightHelpers.PoseEstimate results = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(DrivetrainConstants.LIME_LIGHT_NAME);
+            LimelightHelpers.SetRobotOrientation(cam, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
+            LimelightHelpers.PoseEstimate results = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cam);
 
             if (results != null) {
 
-                if (results.avgTagArea > .2)
+                if (results.avgTagArea > .01)
                 {
                     if(Math.abs(getRate().in(edu.wpi.first.units.Units.RadiansPerSecond)) > DrivetrainConstants.MAX_ANGULAR_VELOCITY_ACCEPT_VISION_DATA)
                     {
@@ -150,10 +132,38 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
                 }
             }
         }
+    }
+    @Override
+    public void readPeriodic() {
+        var moduleObservations = observer.getModuleObservations();
+        frontLeft.readPeriodic(moduleObservations[0]);
+        frontRight.readPeriodic(moduleObservations[1]);
+        backLeft.readPeriodic(moduleObservations[2]);
+        backRight.readPeriodic(moduleObservations[3]);
+
+        addVision(DrivetrainConstants.LIME_LIGHT_REEF4);
+        addVision(DrivetrainConstants.LIME_LIGHT_REEF3);
+        addVision(DrivetrainConstants.LIME_LIGHT_SOURCE);
+
+        ArrayList<Observer.SwerveObservation> observations = observer.getObservations();
+        for (int i = 0; i < observations.size(); i++) {
+            odometry.updateWithTime(
+                    observations.get(i).timestamp,
+                    observations.get(i).yaw,
+                    new SwerveModulePosition[]{
+                            observations.get(i).frontLeft,
+                            observations.get(i).frontRight,
+                            observations.get(i).backLeft,
+                            observations.get(i).backRight
+                    });
+        }
+        observer.clearObservations();
 
         currentStates = new SwerveModuleState[]{frontLeft.getCurrentState(), frontRight.getCurrentState(), backLeft.getCurrentState(), backRight.getCurrentState()};
 
         Logger.recordOutput("RobotPose", getPose());
+        Logger.recordOutput("Drivetrain/CurrentModuleStates", currentStates);
+        Logger.recordOutput("Drivetrain/CurrentSpeeds", getCurrentSpeeds());
     }
 
     @Override
@@ -190,6 +200,9 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         frontRight.writePeriodic();
         backLeft.writePeriodic();
         backRight.writePeriodic();
+
+        Logger.recordOutput("Drivetrain/TargetSpeeds", targetSpeed);
+        Logger.recordOutput("Drivetrain/TargetModuleStates", targetStates);
     }
 
     @Override
@@ -303,7 +316,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         public ChassisSpeeds getTargetSpeeds(Rotation2d currentAngle) {
             double omega = thetaController.calculate(currentAngle.getRadians(), targetAngle.getRadians());
             omega = MathUtil.clamp(omega, -10,10);
-            omega = MathUtil.applyDeadband(omega,.05);
+            omega = MathUtil.applyDeadband(omega,.01);
 //            if (isThetaLock && horizontalSpeed == 0 && verticalSpeed == 0) {
 //                omega = 0;
 //            }

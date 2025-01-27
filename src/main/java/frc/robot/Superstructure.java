@@ -1,5 +1,6 @@
 package frc.robot;
 
+import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -20,14 +21,19 @@ public class Superstructure {
 
     public Superstructure() {
         autoFactory = new AutoFactory();
+        ChoreoAllianceFlipUtil.setYear(2025);
         alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
-    }
 
-    public void initialize() {
         IO.Initialize(IO.PrimaryDriverProfiles.Leo,IO.SecondaryDriverProfiles.KnollController);
         DrivetrainSubsystem.getInstance();
         DrivetrainSubsystem.getInstance().resetPose(new Pose2d(0, 0, new Rotation2d(0)));
         VisionSubsystem.getInstance();
+
+        alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
+    }
+
+    public void initialize() {
+
     }
 
     public void configureActions() {
