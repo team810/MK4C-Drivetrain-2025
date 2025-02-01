@@ -1,7 +1,9 @@
 package frc.robot.subsystems.horn;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
@@ -14,11 +16,21 @@ public class HornTalonFX implements HornIO{
     private final CANrange sensor;
 
     public HornTalonFX(){
+        motor = new TalonFX(LASER_ID);
 
-        motor = new TalonFX(MOTOR_PORT);
+        TalonFXConfiguration config = new TalonFXConfiguration();
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = 30;
+        config.Voltage.PeakForwardVoltage = 12;
+        config.Voltage.PeakReverseVoltage = -12;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+
+        motor.getConfigurator().apply(config);
+
         piston = new DoubleSolenoid(PneumaticsModuleType.REVPH,
-                SOLENOID_PORT_1, SOLENOID_PORT_2);
-        sensor = new CANrange(SENSOR_PORT);
+                PISTON_FWD_ID, PISTON_REV_ID);
+
+        sensor = new CANrange(LASER_ID);
     }
 
     @Override
@@ -29,11 +41,11 @@ public class HornTalonFX implements HornIO{
                 piston.set(DoubleSolenoid.Value.kReverse);
                 break;
             case Intake:
-                motor.set(-MOTOR_SPEED);
+                motor.set(-HornConstants.INTAKE_SPEED);
                 piston.set(DoubleSolenoid.Value.kReverse);
                 break;
             case Score:
-                motor.set(MOTOR_SPEED);
+                motor.set(HornConstants.SCORE_SPEED);
                 piston.set(DoubleSolenoid.Value.kForward);
                 break;
         }
@@ -43,6 +55,21 @@ public class HornTalonFX implements HornIO{
     public boolean atSetpoint() {
         double distance = sensor.getDistance().getValueAsDouble();
         return (distance < SENSOR_SETPOINT + SENSOR_TOLERANCE) && (distance > SENSOR_SETPOINT - SENSOR_TOLERANCE);
+    }
+
+    @Override
+    public void readPeriodic() {
+
+    }
+
+    @Override
+    public void writePeriodic() {
+
+    }
+
+    @Override
+    public void simulationPeriodic() {
+
     }
 
 }

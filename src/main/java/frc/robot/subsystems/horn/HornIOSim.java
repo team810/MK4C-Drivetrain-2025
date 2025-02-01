@@ -25,9 +25,9 @@ public class HornIOSim implements HornIO{
                 DCMotor.getKrakenX60(1),WHEEL_INERTIA,6),
                 DCMotor.getKrakenX60(1));
         solenoidSim = new DoubleSolenoidSim(PneumaticsModuleType.REVPH,
-                                            SOLENOID_PORT_1,
-                                            SOLENOID_PORT_2);
-        sensor = new CANrange(SENSOR_PORT);
+                                            PISTON_FWD_ID,
+                                            PISTON_REV_ID);
+        sensor = new CANrange(LASER_ID);
         sensorSim = new CANrangeSimState(sensor);
 
     }
@@ -41,11 +41,11 @@ public class HornIOSim implements HornIO{
                 solenoidSim.set(DoubleSolenoid.Value.kReverse);
                 break;
             case Intake:
-                flywheelSim.setInput(-MOTOR_SPEED);
+                flywheelSim.setInput(-INTAKE_SPEED);
                 solenoidSim.set(DoubleSolenoid.Value.kReverse);
                 break;
             case Score:
-                flywheelSim.setInput(MOTOR_SPEED);
+                flywheelSim.setInput(SCORE_SPEED);
                 solenoidSim.set(DoubleSolenoid.Value.kForward);
                 break;
         }
@@ -56,6 +56,21 @@ public class HornIOSim implements HornIO{
         sensorSim.setDistance(2*Math.random()*SENSOR_SETPOINT);
         double distance = sensor.getDistance().getValueAsDouble();
         return (distance < SENSOR_SETPOINT + SENSOR_TOLERANCE) && (distance > SENSOR_SETPOINT - SENSOR_TOLERANCE);
+    }
+
+    @Override
+    public void readPeriodic() {
+
+    }
+
+    @Override
+    public void writePeriodic() {
+
+    }
+
+    @Override
+    public void simulationPeriodic() {
+
     }
 
 
