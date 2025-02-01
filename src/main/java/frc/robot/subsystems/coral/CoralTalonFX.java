@@ -11,17 +11,20 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import frc.robot.lib.MechanismState;
 import org.littletonrobotics.junction.Logger;
 
 public class CoralTalonFX implements CoralIO {
 
     private final TalonFX motor;
-    private VoltageOut motorControl;
+    private final VoltageOut motorControl;
     private final CANrange sensor;
 
     private final StatusSignal<Distance> laserDistance;
     private final StatusSignal<Boolean> laserIsDetected;
     private final DoubleSolenoid piston;
+
+    private CoralState appliedMotorState;
 
     public CoralTalonFX() {
         motor = new TalonFX(CoralConstants.MOTOR_ID, CoralConstants.CAN_BUS);
@@ -55,38 +58,32 @@ public class CoralTalonFX implements CoralIO {
     }
 
     @Override
-    public void writePeriodic() {
-
+    public void motorIntake() {
+        motorControl.Output = CoralConstants.INTAKE_VOLTAGE;
+        motor.setControl(motorControl);
     }
 
     @Override
-    public void simulationPeriodic() {
-
+    public void motorScore() {
+        motorControl.Output = CoralConstants.SCORE_VOLTAGE;
+        motor.setControl(motorControl);
     }
 
     @Override
-    public void setState(CoralState state) {
-        switch (state) {
-            case Store:
-                motorControl.Output = 0;
-                motor.setControl(motorControl);
-                break;
-            case Hold:
-                motorControl.Output = 0;
-                motor.setControl(motorControl);
-                piston.set(DoubleSolenoid.Value.kReverse);
-                break;
-            case Intake:
-                motorControl.Output = CoralConstants.INTAKE_VOLTAGE;
-                motor.setControl(motorControl);
-                piston.set(DoubleSolenoid.Value.kReverse);
-                break;
-            case Score:
-                motorControl.Output = CoralConstants.SCORE_VOLTAGE;
-                motor.setControl(motorControl);
-                piston.set(DoubleSolenoid.Value.kForward);
-                break;
-        }
+    public void motorHold() {
+        motorControl.Output = CoralConstants.HOLD_VOLTAGE;
+        motor.setControl(motorControl);
+    }
+
+    @Override
+    public void motorOff() {
+        motorControl.Output = 0;
+        motor.setControl(motorControl);
+    }
+
+    @Override
+    public void setPistonState(DoubleSolenoid.Value state) {
+        piston.set(state);
     }
 
     @Override
@@ -98,5 +95,10 @@ public class CoralTalonFX implements CoralIO {
                 laserDistance.getValue().in(Units.Meters),
                 CoralConstants.LASER_TOLERANCE
         );
+    }
+
+    @Override
+    public DoubleSolenoid.Value getPistonState() {
+        return piston.get();
     }
 }
