@@ -1,13 +1,15 @@
 package frc.robot.subsystems.elevator;
 
-import frc.robot.Robot;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.lib.AdvancedSubsystem;
 
 import java.util.HashMap;
 
 
 public class ElevatorSubsystem extends AdvancedSubsystem {
-    private final HashMap<ElevatorState, Double> elevatorHeights;
+    private final HashMap<ElevatorState, Double> elevatorHeights; // Inches
     private final ElevatorIO elevator;
     private ElevatorState currentState;
 
@@ -23,16 +25,12 @@ public class ElevatorSubsystem extends AdvancedSubsystem {
         elevatorHeights.put(ElevatorState.Trough, 0.0);
         elevatorHeights.put(ElevatorState.Barge,0.0);
 
-        if (Robot.isReal() && ElevatorConstants.ELEVATOR_ON_ROBOT) {
-            elevator = new ElevatorTalonFX();
-        }else{
-            elevator = new ElevatorIOSim();
-        }
+        elevator = new ElevatorTalonFX();
     }
 
     public void setElevatorState(ElevatorState state) {
         this.currentState = state;
-        elevator.setElevator(elevatorHeights.get(currentState));
+        elevator.setElevator(Distance.ofBaseUnits(elevatorHeights.get(currentState), Units.Inch));
     }
 
     public ElevatorState getElevatorState() {return currentState;}
