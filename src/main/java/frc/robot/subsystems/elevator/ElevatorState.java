@@ -8,6 +8,8 @@ public enum ElevatorState {
     MiddleCoral,
     LowCoral,
     Trough,
+    AlgaeRemoveHigh,
+    AlgaeRemoveMiddle,
     Barge // If we go with barge
 
 }

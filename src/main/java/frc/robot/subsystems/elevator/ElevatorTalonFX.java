@@ -7,29 +7,47 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import frc.robot.Robot;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorTalonFX implements ElevatorIO{
-    private final TalonFX primary;
-    private final TalonFX secondary;
+    private final TalonFX leader;
+    private final TalonFXSimState leaderSim;
+    private final MotionMagicVoltage control;
 
     private final StatusSignal<Angle> positionSignal;
     private final StatusSignal<AngularVelocity> velocitySignal;
-    private final StatusSignal<Voltage> voltageSignal;
+
+    private Distance currentHeight = Distance.ofBaseUnits(0, Units.Meters);
+    private LinearVelocity currentLinearVelocity = LinearVelocity.ofBaseUnits(0, Units.MetersPerSecond);
+
+    private final TalonFX follower;
+    private final TalonFXSimState followerSim;
+    private final Follower followerControl;
 
     private Distance targetHeight = Distance.ofBaseUnits(0, Units.Inch);
-    private final MotionMagicVoltage control;
-    private final Follower slaveControl;
+
+    private final StatusSignal<Temperature> leaderTempSignal;
+    private final StatusSignal<Current> leaderCurrentSignal;
+    private final StatusSignal<Voltage> leaderAppliedVoltageSignal;
+
+    private final StatusSignal<Temperature> followerTempSignal;
+    private final StatusSignal<Current> followerCurrentSignal;
+    private final StatusSignal<Voltage> followerAppliedVoltageSignal;
+
+    private ElevatorSim elevatorSim;
 
     public ElevatorTalonFX() {
-        primary = new TalonFX(ElevatorConstants.PRIMARY_MOTOR_ID);
-        secondary = new TalonFX(ElevatorConstants.SECONDARY_MOTOR_ID);
+        leader = new TalonFX(ElevatorConstants.PRIMARY_MOTOR_ID);
+        leaderSim = leader.getSimState();
+        follower = new TalonFX(ElevatorConstants.SECONDARY_MOTOR_ID);
+        followerSim = follower.getSimState();
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         // Current config
@@ -56,47 +74,96 @@ public class ElevatorTalonFX implements ElevatorIO{
         config.MotionMagic.MotionMagicAcceleration = 50;
         config.MotionMagic.MotionMagicJerk = 1000;
 
-        primary.getConfigurator().apply(config);
+        leader.getConfigurator().apply(config);
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-        secondary.getConfigurator().apply(config);
+        follower.getConfigurator().apply(config);
 
-        positionSignal = primary.getPosition();
-        velocitySignal = primary.getVelocity();
-        voltageSignal = primary.getMotorVoltage();
+        positionSignal = leader.getPosition();
+        velocitySignal = leader.getVelocity();
 
-        primary.setPosition(0);
-        secondary.setPosition(0);
+        leaderTempSignal = leader.getDeviceTemp();
+        leaderCurrentSignal = leader.getSupplyCurrent();
+        leaderAppliedVoltageSignal = leader.getMotorVoltage();
+
+        followerTempSignal = follower.getDeviceTemp();
+        followerCurrentSignal = follower.getSupplyCurrent();
+        followerAppliedVoltageSignal = follower.getMotorVoltage();
+
+        leader.setPosition(0);
+        leader.setPosition(0);
 
         control = new MotionMagicVoltage(0);
-        control.EnableFOC = true;
+        control.EnableFOC = false;
         control.Slot = 0;
         control.LimitReverseMotion = true;
         control.UpdateFreqHz = 1000;
 
-        slaveControl = new Follower(primary.getDeviceID(), false);
-        slaveControl.UpdateFreqHz = 1000;
+        followerControl = new Follower(leader.getDeviceID(), false);
+        followerControl.UpdateFreqHz = 1000;
+
+        elevatorSim = new ElevatorSim(
+                DCMotor.getKrakenX60(2),
+                6,
+                Mass.ofBaseUnits(35, Units.Pounds).in(Units.Kilograms),
+                Distance.ofBaseUnits(.98, Units.Inch).in(Units.Meters),
+                Distance.ofBaseUnits(0, Units.Meters).in(Units.Meters), // Min height
+                Distance.ofBaseUnits(100, Units.Meters).in(Units.Meters), // Max height
+                true, // Sim gravity
+                Distance.ofBaseUnits(0, Units.Meters).in(Units.Meters), // Min height, // Starting height,
+                0
+        );
     }
 
     @Override
     public void readPeriodic() {
-        Logger.recordOutput("Elevator/Height", getHeight());
-        Logger.recordOutput("Elevator/Velocity", velocitySignal.getValue().in(Units.RotationsPerSecond)/ElevatorConstants.CONVERSION_FACTOR);
-        Logger.recordOutput("Elevator/VoltageOutput", voltageSignal.getValue().in(Units.Volts));
-        Logger.recordOutput("Elevator/TargetHeight", targetHeight.in(Units.Inches));
+        StatusSignal.refreshAll(positionSignal,
+                velocitySignal,
+                leaderAppliedVoltageSignal,
+                leaderAppliedVoltageSignal,
+                leaderTempSignal,
+                followerAppliedVoltageSignal,
+                followerTempSignal,
+                followerCurrentSignal,
+                followerAppliedVoltageSignal,
+                followerTempSignal
+        );
+
+        currentHeight = Distance.ofBaseUnits(positionSignal.getValue().in(Units.Rotations) / ElevatorConstants.CONVERSION_FACTOR, Units.Inches);
+        currentLinearVelocity = LinearVelocity.ofBaseUnits(velocitySignal.getValue().in(Units.RotationsPerSecond) / ElevatorConstants.CONVERSION_FACTOR, Units.InchesPerSecond);
+
+        Logger.recordOutput("Elevator/CurrentHeight", currentHeight);
+        Logger.recordOutput("Elevator/CurrentLinearVelocity", currentLinearVelocity);
         Logger.recordOutput("Elevator/AtTargetHeight", targetHeight.in(Units.Inches));
+
+        Logger.recordOutput("Elevator/Leader/Voltage", leaderAppliedVoltageSignal.getValue().in(Units.Volts));
+        Logger.recordOutput("Elevator/Leader/Current", leaderCurrentSignal.getValue().in(Units.Amps));
+        Logger.recordOutput("Elevator/Leader/Temperature",leaderTempSignal.getValue().in(Units.Fahrenheit));
+
+        Logger.recordOutput("Elevator/Follower/Voltage", followerAppliedVoltageSignal.getValue().in(Units.Volts));
+        Logger.recordOutput("Elevator/Follower/Current", followerCurrentSignal.getValue().in(Units.Amps));
+        Logger.recordOutput("Elevator/Follower/Temperature",followerTempSignal.getValue().in(Units.Fahrenheit));
     }
 
     @Override
     public void writePeriodic() {
         control.Position = targetHeight.in(Units.Inch) * ElevatorConstants.CONVERSION_FACTOR;
-        primary.setControl(control);
-
-        secondary.setControl(slaveControl);
+        leader.setControl(control);
+        follower.setControl(followerControl);
     }
 
     @Override
     public void simulationPeriodic() {
+        elevatorSim.setInputVoltage(leaderAppliedVoltageSignal.getValue().in(Units.Volts));
+        elevatorSim.update(Robot.PERIOD);
+        Angle position = Angle.ofBaseUnits(
+                Distance.ofBaseUnits(
+                        elevatorSim.getPositionMeters(), Units.Meters).in(Units.Inch) / ElevatorConstants.CONVERSION_FACTOR,
+                Units.Rotations);
 
+        leaderSim.setSupplyVoltage(12);
+        leaderSim.setRawRotorPosition(position);
+        followerSim.setSupplyVoltage(12);
+        followerSim.setRawRotorPosition(position);
     }
 
     @Override

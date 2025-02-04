@@ -1,6 +1,5 @@
 package frc.robot.subsystems.elevator;
 
-import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.lib.AdvancedSubsystem;
@@ -28,12 +27,6 @@ public class ElevatorSubsystem extends AdvancedSubsystem {
         elevator = new ElevatorTalonFX();
     }
 
-    public void setElevatorState(ElevatorState state) {
-        this.currentState = state;
-        elevator.setElevator(Distance.ofBaseUnits(elevatorHeights.get(currentState), Units.Inch));
-    }
-
-    public ElevatorState getElevatorState() {return currentState;}
 
     @Override
     public void readPeriodic() {
@@ -49,4 +42,11 @@ public class ElevatorSubsystem extends AdvancedSubsystem {
     public void simulatePeriodic() {
 
     }
+
+    public void setElevatorState(ElevatorState state) {
+        this.currentState = state;
+        elevator.setElevator(Distance.ofBaseUnits(elevatorHeights.get(currentState), Units.Inch));
+    }
+
+    public ElevatorState getElevatorState() {return currentState;}
 }
