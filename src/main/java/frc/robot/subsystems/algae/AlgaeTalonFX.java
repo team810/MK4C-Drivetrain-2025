@@ -188,7 +188,16 @@ public class AlgaeTalonFX implements AlgaeIO {
         return MathUtil.isNear(
                 AlgaeConstants.LASER_EXPECTED.in(Units.Meters),
                 distanceSignal.getValue().in(Units.Meters),
-                AlgaeConstants.LASER_EXPECTED.in(Units.Meters)
+                AlgaeConstants.LASER_TOLERANCE.in(Units.Meters)
+        );
+    }
+
+    @Override
+    public boolean atPivotSetpoint() {
+        return MathUtil.isNear(
+                targetPivot.in(Units.Radians),
+                pivotPositionSignal.getValue().in(Units.Radians),
+                AlgaeConstants.PIVOT_TOLERANCE.in(Units.Radians)
         );
     }
 

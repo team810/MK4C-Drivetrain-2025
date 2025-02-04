@@ -9,6 +9,7 @@ public interface AlgaeIO {
     public void simulatePeriodic();
 
     public boolean hasAlgae();
+    public boolean atPivotSetpoint();
     public void setTargetPivot(Angle angle);
     public void setDriveVoltage(Voltage voltage);
 }
