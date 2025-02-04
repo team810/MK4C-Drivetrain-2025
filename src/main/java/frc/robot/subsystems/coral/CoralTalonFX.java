@@ -11,7 +11,6 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import frc.robot.lib.MechanismState;
 import org.littletonrobotics.junction.Logger;
 
 public class CoralTalonFX implements CoralIO {
