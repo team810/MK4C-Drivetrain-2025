@@ -1,69 +1,89 @@
 package frc.robot.subsystems.coral;
 
-
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import frc.robot.lib.AdvancedSubsystem;
+import org.littletonrobotics.junction.Logger;
+
+import java.util.HashMap;
 
 public class CoralSubsystem extends AdvancedSubsystem {
-    private final CoralIO mech;
-    private CoralState motorState;
-    private DoubleSolenoid.Value pistonState;
+    private static CoralSubsystem instance;
+    private CoralMotorState motorState;
+    private CoralPistonState pistonState;
+
+    private final HashMap<CoralMotorState, Voltage> motorStateMap;
+    private final HashMap<CoralPistonState, DoubleSolenoid.Value> pistonStateMap;
+
+    private final CoralIO io;
+
+    private Voltage currentVoltageTarget;
+    private DoubleSolenoid.Value currentPistonTarget;
 
     private CoralSubsystem() {
-        mech = new CoralTalonFX();
-    }
+        motorState = CoralMotorState.Off;
+        pistonState = CoralPistonState.Store;
 
-    public void setPistonState(DoubleSolenoid.Value pistonState) {
-        this.pistonState = pistonState;
-    }
+        motorStateMap = new HashMap<>();
+        motorStateMap.put(CoralMotorState.Off, Voltage.ofBaseUnits(0, Units.Volts));
+        motorStateMap.put(CoralMotorState.Source, CoralConstants.SOURCE_VOLTAGE);
+        motorStateMap.put(CoralMotorState.ReefScore, CoralConstants.REEF_SCORE_VOLTAGE);
+        motorStateMap.put(CoralMotorState.TroughScore, CoralConstants.TROUGH_SCORE_VOLTAGE);
 
-    public void setCoralMotorState(CoralState motorState) {
-        this.motorState = motorState;
-        switch (motorState) {
-            case Store -> {
-                mech.motorOff();
-                break;
-            }
-            case Hold -> {
-                mech.motorHold();
-                break;
-            }
-            case Intake -> {
-                mech.motorIntake();
-                break;
-            }
-            case Score -> {
-                mech.motorScore();
-                break;
-            }
-        }
+        pistonStateMap = new HashMap<>();
+        pistonStateMap.put(CoralPistonState.Store, DoubleSolenoid.Value.kForward);
+        pistonStateMap.put(CoralPistonState.Hold, DoubleSolenoid.Value.kReverse);
+        pistonStateMap.put(CoralPistonState.Reef, DoubleSolenoid.Value.kForward);
+        pistonStateMap.put(CoralPistonState.Source, DoubleSolenoid.Value.kReverse);
+        pistonStateMap.put(CoralPistonState.Trough, DoubleSolenoid.Value.kReverse);
+
+        io = new CoralTalonFX();
     }
 
     @Override
     public void readPeriodic() {
-        mech.readPeriodic();
+        io.readPeriodic();
+
+        Logger.recordOutput("Coral/CoralPistonState", pistonState);
+        Logger.recordOutput("Coral/CoralMotorState", motorState);
     }
 
     @Override
     public void writePeriodic() {
-        mech.writePeriodic();
+        io.writePeriodic();
     }
 
     @Override
     public void simulatePeriodic() {
-        mech.simulationPeriodic();
+        io.simulationPeriodic();
     }
 
-    public CoralState getMotorState() {
+    public CoralMotorState getMotorState() {
         return motorState;
     }
 
-    public boolean hasCoral(){
-        return mech.hasCoral();
+    public void setCoralMotorState(CoralMotorState motorState) {
+        this.motorState = motorState;
+        this.currentVoltageTarget = motorStateMap.get(this.motorState);
+        this.io.setVoltage(currentVoltageTarget);
     }
 
-    public DoubleSolenoid.Value getPistonState() {
+    public CoralPistonState getCoralPistonState() {
         return pistonState;
+    }
+
+    public void setCoralPistonState(CoralPistonState pistonState) {
+        this.pistonState = pistonState;
+        this.currentPistonTarget = pistonStateMap.get(this.pistonState);
+        this.io.setPistonState(currentPistonTarget);
+    }
+
+    public static CoralSubsystem getInstance() {
+        if (instance == null) {
+            instance = new CoralSubsystem();
+        }
+        return instance;
     }
 }
 

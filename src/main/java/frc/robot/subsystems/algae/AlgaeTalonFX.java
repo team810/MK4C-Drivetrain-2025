@@ -44,6 +44,7 @@ public class AlgaeTalonFX implements AlgaeIO {
 
     private final CANrange laser;
     private final StatusSignal<Distance> distanceSignal;
+    private final StatusSignal<Boolean> detectedSignal;
 
     public AlgaeTalonFX() {
         pivotMotor = new TalonFX(AlgaeConstants.PIVOT_MOTOR_ID, AlgaeConstants.CANBUS);
@@ -135,6 +136,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         laserConfig.FutureProofConfigs = true;
         laser.getConfigurator().apply(laserConfig);
         distanceSignal = laser.getDistance();
+        detectedSignal = laser.getIsDetected();
     }
 
     @Override
@@ -145,7 +147,10 @@ public class AlgaeTalonFX implements AlgaeIO {
                 pivotTemperatureSignal,
                 pivotVoltageSignal,
                 pivotAppliedCurrentSignal,
+
                 distanceSignal,
+                detectedSignal,
+
                 driveVoltageSignal,
                 driveAppliedCurrentSignal,
                 driveTemperatureSignal

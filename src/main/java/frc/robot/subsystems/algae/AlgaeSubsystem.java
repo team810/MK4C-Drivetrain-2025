@@ -4,11 +4,14 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.lib.AdvancedSubsystem;
+import frc.robot.subsystems.coral.CoralSubsystem;
 import org.littletonrobotics.junction.Logger;
 
 import java.util.HashMap;
 
 public class AlgaeSubsystem extends AdvancedSubsystem {
+    private static AlgaeSubsystem instance;
+
     private AlgaePivotStates pivotState;
     private AlgaeDriveStates driveState;
 
@@ -79,5 +82,13 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
         this.driveState = driveState;
         currentTargetDriveVoltage = driveVoltageMap.get(this.driveState);
         io.setDriveVoltage(currentTargetDriveVoltage);
+    }
+
+    public static AlgaeSubsystem getInstance() {
+        if (instance == null) {
+            instance = new AlgaeSubsystem();
+        }
+        return instance;
+
     }
 }

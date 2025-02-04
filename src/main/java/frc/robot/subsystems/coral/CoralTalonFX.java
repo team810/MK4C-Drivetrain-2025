@@ -8,22 +8,26 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import org.littletonrobotics.junction.Logger;
 
 public class CoralTalonFX implements CoralIO {
-
     private final TalonFX motor;
-    private final VoltageOut motorControl;
-    private final CANrange sensor;
+    private final VoltageOut voltageControl;
 
+    private final StatusSignal<Temperature> temperaturesSignal;
+    private final StatusSignal<Current> currentSignal;
+    private final StatusSignal<Voltage> voltageSignal;
+
+    private final CANrange sensor;
     private final StatusSignal<Distance> laserDistance;
     private final StatusSignal<Boolean> laserIsDetected;
     private final DoubleSolenoid piston;
-
-    private CoralState appliedMotorState;
 
     public CoralTalonFX() {
         motor = new TalonFX(CoralConstants.MOTOR_ID, CoralConstants.CAN_BUS);
@@ -36,48 +40,41 @@ public class CoralTalonFX implements CoralIO {
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motor.getConfigurator().apply(config);
 
-        motorControl = new VoltageOut(0);
-        motorControl.EnableFOC = true;
+        voltageControl = new VoltageOut(0);
+        voltageControl.EnableFOC = false;
+
+        voltageSignal = motor.getMotorVoltage();
+        currentSignal = motor.getStatorCurrent();
+        temperaturesSignal = motor.getDeviceTemp();
 
         sensor = new CANrange(CoralConstants.LASER_ID, CoralConstants.CAN_BUS);
         laserDistance = sensor.getDistance();
         laserIsDetected = sensor.getIsDetected();
 
-        piston = new DoubleSolenoid(PneumaticsModuleType.REVPH, CoralConstants.PISTON_FWD_CHANNEL, CoralConstants.PISTON_REV_CHANNEL);
+        piston = new DoubleSolenoid(
+                PneumaticsModuleType.REVPH,
+                CoralConstants.PISTON_FWD_CHANNEL,
+                CoralConstants.PISTON_REV_CHANNEL
+        );
     }
 
     @Override
     public void readPeriodic() {
+        StatusSignal.refreshAll(laserDistance, laserIsDetected, currentSignal,temperaturesSignal,voltageSignal);
         Logger.recordOutput("Coral/HasCoral", hasCoral());
         Logger.recordOutput("Coral/RawDistance", laserDistance.getValue());
         Logger.recordOutput("Coral/IsDetected", laserIsDetected.getValue());
 
-        Logger.recordOutput("Coral/MotorTemp", motor.getDeviceTemp().getValue().in(Units.Fahrenheit));
-        Logger.recordOutput("Coral/MotorVoltage", motor.getMotorVoltage().getValue().in(Units.Volts));
+        Logger.recordOutput("Coral/MotorCurrent", currentSignal.getValue());
+        Logger.recordOutput("Coral/MotorTemperatures", temperaturesSignal.getValue());
+        Logger.recordOutput("Coral/MotorVoltage", voltageSignal.getValue());
     }
 
-    @Override
-    public void motorIntake() {
-        motorControl.Output = CoralConstants.INTAKE_VOLTAGE;
-        motor.setControl(motorControl);
-    }
 
     @Override
-    public void motorScore() {
-        motorControl.Output = CoralConstants.SCORE_VOLTAGE;
-        motor.setControl(motorControl);
-    }
-
-    @Override
-    public void motorHold() {
-        motorControl.Output = CoralConstants.HOLD_VOLTAGE;
-        motor.setControl(motorControl);
-    }
-
-    @Override
-    public void motorOff() {
-        motorControl.Output = 0;
-        motor.setControl(motorControl);
+    public void setVoltage(Voltage voltage) {
+        voltageControl.Output = voltage.in(Units.Volts);
+        motor.setControl(voltageControl);
     }
 
     @Override
