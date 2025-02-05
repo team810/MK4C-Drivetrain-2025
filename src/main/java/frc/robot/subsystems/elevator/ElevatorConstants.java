@@ -4,8 +4,8 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 
 public class ElevatorConstants {
-    public static final int PRIMARY_MOTOR_ID = 1;
-    public static final int SECONDARY_MOTOR_ID = 2;
+    public static final int PRIMARY_MOTOR_ID = 10;
+    public static final int SECONDARY_MOTOR_ID = 11;
 
     public static final double CONVERSION_FACTOR = 1.0911; // rotations/in
 

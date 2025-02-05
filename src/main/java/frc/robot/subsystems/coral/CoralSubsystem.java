@@ -63,6 +63,10 @@ public class CoralSubsystem extends AdvancedSubsystem {
         return motorState;
     }
 
+    public boolean hasCoral() {
+        return io.hasCoral();
+    }
+
     public void setCoralMotorState(CoralMotorState motorState) {
         this.motorState = motorState;
         this.currentVoltageTarget = motorStateMap.get(this.motorState);

@@ -5,8 +5,8 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class CoralConstants {
     public static final String CAN_BUS = "Mech";
-    public static final int MOTOR_ID = 9;
-    public static final int LASER_ID = 10;
+    public static final int MOTOR_ID = 12;
+    public static final int LASER_ID = 13;
     public static final int PISTON_FWD_CHANNEL = 2;
     public static final int PISTON_REV_CHANNEL= 3;
 

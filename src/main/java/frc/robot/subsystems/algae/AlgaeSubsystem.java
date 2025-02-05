@@ -83,6 +83,7 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
         currentTargetDriveVoltage = driveVoltageMap.get(this.driveState);
         io.setDriveVoltage(currentTargetDriveVoltage);
     }
+    public boolean hasAlgae() {return io.hasAlgae();}
 
     public static AlgaeSubsystem getInstance() {
         if (instance == null) {

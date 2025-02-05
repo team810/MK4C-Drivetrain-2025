@@ -110,6 +110,7 @@ public class ElevatorTalonFX implements ElevatorIO{
                 Distance.ofBaseUnits(100, Units.Meters).in(Units.Meters), // Max height
                 true, // Sim gravity
                 Distance.ofBaseUnits(0, Units.Meters).in(Units.Meters), // Min height, // Starting height,
+                0,
                 0
         );
     }

@@ -1,6 +1,7 @@
 package frc.robot.IO;
 
 public enum Controls {
+    // Primary
     driveXVelocity,
     driveYVelocity,
 
@@ -13,5 +14,19 @@ public enum Controls {
 
     leftSource,
     rightSource,
+
+    // Secondary
+    Score,
+    PositionL4,
+    PositionL3,
+    PositionL2,
+    PositionTrough,
+    Source,
+    PositionProcessor,
+    PositionBarge,
+    PositionStore,
+
+
+
 
 }
