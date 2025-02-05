@@ -1,15 +1,18 @@
 package frc.robot.subsystems.elevator;
 
 public enum ElevatorState {
-    Ground,
     Source,
-    Processor,
-    HighCoral,
-    MiddleCoral,
-    LowCoral,
+    L4,
+    L3,
+    L2,
     Trough,
+
+    Processor,
     AlgaeRemoveHigh,
     AlgaeRemoveMiddle,
-    Barge // If we go with barge
+    Barge,
+
+    StoreCoral,
+    StoreAlgae
 
 }

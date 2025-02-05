@@ -133,7 +133,7 @@ public class ElevatorTalonFX implements ElevatorIO{
 
         Logger.recordOutput("Elevator/CurrentHeight", currentHeight);
         Logger.recordOutput("Elevator/CurrentLinearVelocity", currentLinearVelocity);
-        Logger.recordOutput("Elevator/AtTargetHeight", targetHeight.in(Units.Inches));
+        Logger.recordOutput("Elevator/AtTargetHeight", getHeight());
 
         Logger.recordOutput("Elevator/Leader/Voltage", leaderAppliedVoltageSignal.getValue().in(Units.Volts));
         Logger.recordOutput("Elevator/Leader/Current", leaderCurrentSignal.getValue().in(Units.Amps));
