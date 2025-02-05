@@ -26,6 +26,11 @@ public enum Controls {
     PositionBarge,
     PositionStore,
 
+    ClimbDeployLegs, // Might be a toggle instead
+    ClimbRetractLegs,
+    ClimbClamp,
+
+
 
 
 
