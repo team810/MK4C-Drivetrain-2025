@@ -423,9 +423,10 @@ public class AutoFactory {
     }
 
     private Command generateFollowTrajectoryCommand(Trajectory<SwerveSample> trajectory) {
+
         return new SequentialCommandGroup(
-                new FollowTrajectory(trajectory),
-                new GoToPose(trajectory.getFinalPose(false).get())
+                new FollowTrajectory(trajectory)
+//                new GoToPose(trajectory.getFinalPose(false).)
         );
     }
 }

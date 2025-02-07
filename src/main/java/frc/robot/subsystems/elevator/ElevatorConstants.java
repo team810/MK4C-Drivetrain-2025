@@ -20,5 +20,6 @@ public class ElevatorConstants {
     public static final Distance BARGE_HEIGHT = Distance.ofBaseUnits(0, Units.Inches);
     public static final Distance STORE_CORAL_HEIGHT = Distance.ofBaseUnits(0, Units.Inches);
     public static final Distance STORE_ALGAE_HEIGHT = Distance.ofBaseUnits(0, Units.Inches);
+    
 
 }
