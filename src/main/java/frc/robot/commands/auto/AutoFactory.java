@@ -6,12 +6,11 @@ import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Superstructure;
+import frc.robot.commands.CommandFactory;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
+import frc.robot.subsystems.elevator.ElevatorSubsystem;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -390,22 +389,42 @@ public class AutoFactory {
 
         DrivetrainSubsystem.getInstance().resetPose(part1.getInitialPose(false).get());
         autoCommand = new SequentialCommandGroup(
-                generateFollowTrajectoryCommand(part1),
-                new InstantCommand(() -> System.out.println("Score 1")),
-                new WaitCommand(1),
-                generateFollowTrajectoryCommand(part2),
-                new WaitCommand(1),
-                new InstantCommand(() -> System.out.println("Pickup from source")),
-                generateFollowTrajectoryCommand(part3),
-                new InstantCommand(() -> System.out.println("Score 2")),
-                new WaitCommand(1),
-                generateFollowTrajectoryCommand(part4),
-                new InstantCommand(() -> System.out.println("Pickup from source")),
-                new WaitCommand(1),
-                generateFollowTrajectoryCommand(part5),
-                new InstantCommand(() -> System.out.println("Score 3"))
+                new ParallelCommandGroup(
+                        generateFollowTrajectoryCommand(part1),
+                        CommandFactory.PositionL4()
+                        ),
+                score(),
+                new ParallelCommandGroup(
+                        generateFollowTrajectoryCommand(part2),
+                        CommandFactory.Source()
+                ),
+                new WaitCommand(.5),
+                new ParallelCommandGroup(
+                        generateFollowTrajectoryCommand(part3),
+                        CommandFactory.PositionL4()
+                ),
+                score(),
+                new ParallelCommandGroup(
+                        generateFollowTrajectoryCommand(part4),
+                        CommandFactory.Source()
+                ),
+                new WaitCommand(.5),
+                new ParallelCommandGroup(
+                        generateFollowTrajectoryCommand(part5),
+                        CommandFactory.PositionL4()
+                ),
+                score()
         );
     }
+
+    public Command score() {
+        return new SequentialCommandGroup(
+                new WaitUntilCommand(ElevatorSubsystem.getInstance()::atSetpoint),
+                CommandFactory.Score(),
+                new WaitCommand(.5)
+        );
+    }
+
 
     public Command getAutoCommand() {
         return autoCommand;
@@ -425,8 +444,8 @@ public class AutoFactory {
     private Command generateFollowTrajectoryCommand(Trajectory<SwerveSample> trajectory) {
 
         return new SequentialCommandGroup(
-                new FollowTrajectory(trajectory)
-//                new GoToPose(trajectory.getFinalPose(false).)
+                new FollowTrajectory(trajectory),
+                new GoToPose(trajectory.getFinalPose(false).get())
         );
     }
 }

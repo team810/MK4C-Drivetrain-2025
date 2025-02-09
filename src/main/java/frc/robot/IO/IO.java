@@ -52,8 +52,15 @@ public abstract class IO {
                 break;
         }
 
-        controlsButtons.put(Controls.PositionL4, primary::getAButton);
-        controlsButtons.put(Controls.PositionStore, primary::getBButton);
+        controlsButtons.put(Controls.PositionL4, secondary::getAButton);
+        controlsButtons.put(Controls.PositionL3, secondary::getBButton);
+        controlsButtons.put(Controls.PositionL2, secondary::getXButton);
+        controlsButtons.put(Controls.PositionTrough, secondary::getYButton);
+        controlsButtons.put(Controls.PositionBarge, () -> secondary.getLeftTriggerAxis() > .5);
+        controlsButtons.put(Controls.PositionProcessor, secondary::getRightBumperButton);
+        controlsButtons.put(Controls.Source, secondary::getLeftBumperButton);
+
+        controlsButtons.put(Controls.PositionStore, () -> secondary.getRightTriggerAxis() > .5);
 
         switch (secondaryProfile) {
             case KnollJoystick:

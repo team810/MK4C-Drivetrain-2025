@@ -61,7 +61,7 @@ public class KrakenNeoModule implements SwerveModuleIO{
         driveMotor.getConfigurator().apply(DrivetrainConstants.getDriveConfig(id));
         driveSimState = driveMotor.getSimState();
 
-        driveMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(1),.000000001,1),DCMotor.getKrakenX60Foc(1));
+        driveMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(1),.000000000001,1),DCMotor.getKrakenX60Foc(1));
 
         steerMotor = new SparkMax(DrivetrainConstants.getSteerID(id), SparkLowLevel.MotorType.kBrushless);
         steerMotor.clearFaults();

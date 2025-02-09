@@ -4,9 +4,11 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -24,7 +26,6 @@ public class ElevatorTalonFX implements ElevatorIO{
     private final StatusSignal<Angle> positionSignal;
     private final StatusSignal<AngularVelocity> velocitySignal;
 
-    private Distance currentHeight = Distance.ofBaseUnits(0, Units.Meters);
     private LinearVelocity currentLinearVelocity = LinearVelocity.ofBaseUnits(0, Units.MetersPerSecond);
 
     private final TalonFX follower;
@@ -52,30 +53,23 @@ public class ElevatorTalonFX implements ElevatorIO{
         TalonFXConfiguration config = new TalonFXConfiguration();
         // Current config
         config.CurrentLimits.SupplyCurrentLimit = 40;
-        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimitEnable = false;
         // Voltage config
-        config.Voltage.PeakForwardVoltage = -12;
+        config.Voltage.PeakForwardVoltage = 12;
         config.Voltage.PeakReverseVoltage = -12;
         // Motion config
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-        config.Slot0.kG = .4;
-        config.Slot0.kV = 6;
+        config.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
+        config.Slot0.kG = .5;
         config.Slot0.kP = 2;
         config.Slot0.kI = 0;
         config.Slot0.kD = 0;
-        // Configure pid controller
-        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
-        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 100; // Test to set the upper limit
 
         config.MotionMagic.MotionMagicCruiseVelocity = 100;
         config.MotionMagic.MotionMagicAcceleration = 250;
-        config.MotionMagic.MotionMagicJerk = 1000;
 
         leader.getConfigurator().apply(config);
-        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
         follower.getConfigurator().apply(config);
 
         positionSignal = leader.getPosition();
@@ -95,8 +89,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         control = new MotionMagicVoltage(0);
         control.EnableFOC = false;
         control.Slot = 0;
-        control.LimitReverseMotion = true;
-        control.UpdateFreqHz = 1000;
+        control.UseTimesync = false;
 
         followerControl = new Follower(leader.getDeviceID(), false);
         followerControl.UpdateFreqHz = 1000;
@@ -111,7 +104,7 @@ public class ElevatorTalonFX implements ElevatorIO{
                 true, // Sim gravity
                 .01,
                 0.000000001,
-                .0000000001
+                0
         );
     }
 
@@ -137,6 +130,9 @@ public class ElevatorTalonFX implements ElevatorIO{
         Logger.recordOutput("Elevator/CurrentLinearVelocity", currentLinearVelocity);
         Logger.recordOutput("Elevator/AtTargetHeight", atSetpoint());
 
+        Logger.recordOutput("Elevator/TargetRaw", control.Position);
+        Logger.recordOutput("Elevator/RawEncoder", positionSignal.getValue().in(Units.Rotations));
+
         Logger.recordOutput("Elevator/Leader/Voltage", leaderAppliedVoltageSignal.getValue().in(Units.Volts));
         Logger.recordOutput("Elevator/Leader/Current", leaderCurrentSignal.getValue().in(Units.Amps));
         Logger.recordOutput("Elevator/Leader/Temperature",leaderTempSignal.getValue().in(Units.Fahrenheit));
@@ -159,12 +155,15 @@ public class ElevatorTalonFX implements ElevatorIO{
         elevatorSim.update(Robot.PERIOD);
 
         double heightIn = edu.wpi.first.math.util.Units.metersToInches(elevatorSim.getPositionMeters());
+        double velocityIn = edu.wpi.first.math.util.Units.metersToInches(elevatorSim.getVelocityMetersPerSecond());
         leaderSim = leader.getSimState();
         leaderSim.setSupplyVoltage(12);
         leaderSim.setRawRotorPosition(heightIn / ElevatorConstants.CONVERSION_FACTOR);
+        leaderSim.setRotorVelocity(velocityIn/ ElevatorConstants.CONVERSION_FACTOR);
         followerSim = follower.getSimState();
         followerSim.setSupplyVoltage(12);
         followerSim.setRawRotorPosition(heightIn / ElevatorConstants.CONVERSION_FACTOR);
+        followerSim.setRotorVelocity(velocityIn/ ElevatorConstants.CONVERSION_FACTOR);
     }
 
     @Override

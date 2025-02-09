@@ -2,7 +2,6 @@ package frc.robot.subsystems.coral;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import frc.robot.lib.AdvancedSubsystem;
@@ -36,8 +35,8 @@ public class CoralSubsystem extends AdvancedSubsystem {
         pistonStateMap = new HashMap<>();
         pistonStateMap.put(CoralPistonState.Store, DoubleSolenoid.Value.kForward);
         pistonStateMap.put(CoralPistonState.Hold, DoubleSolenoid.Value.kReverse);
-        pistonStateMap.put(CoralPistonState.Reef, DoubleSolenoid.Value.kForward);
-        pistonStateMap.put(CoralPistonState.Source, DoubleSolenoid.Value.kReverse);
+        pistonStateMap.put(CoralPistonState.Reef, DoubleSolenoid.Value.kReverse);
+        pistonStateMap.put(CoralPistonState.Source, DoubleSolenoid.Value.kForward);
         pistonStateMap.put(CoralPistonState.Trough, DoubleSolenoid.Value.kReverse);
 
         io = new CoralTalonFX();
@@ -59,6 +58,7 @@ public class CoralSubsystem extends AdvancedSubsystem {
 
     @Override
     public void simulatePeriodic() {
+
         io.simulationPeriodic();
     }
 

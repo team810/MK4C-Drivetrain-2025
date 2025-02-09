@@ -51,8 +51,13 @@ public class Superstructure {
     }
 
     public void configureActions() {
-//        new Trigger(IO.getButtonValue(Controls.resetGyro)).onTrue(new InstantCommand(() -> DrivetrainSubsystem.getInstance().resetGyro()));
         new Trigger(IO.getButtonValue(Controls.PositionL4)).onTrue(CommandFactory.PositionL4());
+        new Trigger(IO.getButtonValue(Controls.PositionL3)).onTrue(CommandFactory.PositionL3());
+        new Trigger(IO.getButtonValue(Controls.PositionL2)).onTrue(CommandFactory.PositionL2());
+        new Trigger(IO.getButtonValue(Controls.PositionTrough)).onTrue(CommandFactory.PositionTrough());
+        new Trigger(IO.getButtonValue(Controls.PositionBarge)).onTrue(CommandFactory.PositionBarge());
+        new Trigger(IO.getButtonValue(Controls.PositionProcessor)).onTrue(CommandFactory.Processor());
+        new Trigger(IO.getButtonValue(Controls.Source)).onTrue(CommandFactory.Source());
         new Trigger(IO.getButtonValue(Controls.PositionStore)).onTrue(CommandFactory.StoreCoral());
     }
 
@@ -71,12 +76,13 @@ public class Superstructure {
         Logger.recordOutput("SuperStructure/Alliance", alliance);
         Logger.recordOutput("SuperStructure/Pressure", pneumaticsControlModule.getPressure(0));
 
-        Pose3d elevator = new Pose3d(0, .1, edu.wpi.first.math.util.Units.inchesToMeters(ElevatorSubsystem.getInstance().getCurrentHeight()) + 0.18,new Rotation3d());
-//        Pose3d elevator = new Pose3d(0, 0,0,new Rotation3d());
+        double elevatorHeight = edu.wpi.first.math.util.Units.inchesToMeters(ElevatorSubsystem.getInstance().getCurrentHeight());
+        Pose3d secondStage = new Pose3d(0,0,elevatorHeight * .32419, new Rotation3d());
+        Pose3d insideStage = new Pose3d(0,0, elevatorHeight * .67, new Rotation3d());
 
-        Pose3d algae = new Pose3d(0, .2,elevator.getZ() + .17,new Rotation3d(Math.toRadians(-63) + AlgaeSubsystem.getInstance().currentPivotAngle(),0,0));
-        Pose3d coral = new Pose3d(.15,.23,elevator.getZ() + .07,CoralSubsystem.getInstance().getAngle());
-//        Pose3d coral = new Pose3d(0,0,0,new Rotation3d(0, 0,0));
+        Pose3d carriage = new Pose3d(0, .1, edu.wpi.first.math.util.Units.inchesToMeters(ElevatorSubsystem.getInstance().getCurrentHeight()) + 0.18,new Rotation3d());
+        Pose3d algae = new Pose3d(0, .2,carriage.getZ() + .17,new Rotation3d(Math.toRadians(-63) + AlgaeSubsystem.getInstance().currentPivotAngle(),0,0));
+        Pose3d coral = new Pose3d(.15,.23,carriage.getZ() + .07,CoralSubsystem.getInstance().getAngle());
 
         Pose3d coralGP = new Pose3d(0,0,0,new Rotation3d());
         if (CoralSubsystem.getInstance().hasCoral()) {
@@ -86,7 +92,7 @@ public class Superstructure {
         if (AlgaeSubsystem.getInstance().hasAlgae()) {
             algaeGP = algae;
         }
-        Logger.recordOutput("Mechanism", elevator, algae, coral);
+        Logger.recordOutput("Mechanism", secondStage, insideStage, carriage, algae, coral);
         Logger.recordOutput("CoralGP", coralGP);
         Logger.recordOutput("AlgaeGP", algaeGP);
 

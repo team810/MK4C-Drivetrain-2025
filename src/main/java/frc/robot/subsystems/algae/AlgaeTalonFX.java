@@ -56,10 +56,10 @@ public class AlgaeTalonFX implements AlgaeIO {
 
         pivotMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine; // Takes the cos of the angle and then calculates the input needed to overcome gravity
         pivotMotorConfig.Slot0.kS = 0;
-        pivotMotorConfig.Slot0.kV = 7; // Volts
+        pivotMotorConfig.Slot0.kV = .125; // Volts
         pivotMotorConfig.Slot0.kA = 0;
         pivotMotorConfig.Slot0.kG = 0;
-        pivotMotorConfig.Slot0.kP = 5;
+        pivotMotorConfig.Slot0.kP = 64 * 5;
         pivotMotorConfig.Slot0.kI = 0;
         pivotMotorConfig.Slot0.kD = 0;
 
@@ -69,7 +69,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         pivotMotorConfig.Voltage.PeakReverseVoltage = -12;
 
         pivotMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 100;
-        pivotMotorConfig.MotionMagic.MotionMagicAcceleration = 200;
+        pivotMotorConfig.MotionMagic.MotionMagicAcceleration = 400;
         pivotMotorConfig.MotionMagic.MotionMagicJerk = 1000;
 
 //        pivotMotorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
@@ -158,7 +158,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         );
 
         Logger.recordOutput("Algae/Pivot/TargetAngle",pivotControl.Position);
-        Logger.recordOutput("Algae/Pivot/Position",pivotPositionSignal.getValue().in(Units.Radians));
+        Logger.recordOutput("Algae/Pivot/Position",pivotPositionSignal.getValue().in(Units.Rotations));
         Logger.recordOutput("Algae/Pivot/Velocity",pivotVelocitySignal.getValue());
         Logger.recordOutput("Algae/Pivot/MotorTemp", pivotTemperatureSignal.getValue());
         Logger.recordOutput("Algae/Pivot/Voltage", pivotVoltageSignal.getValue());
@@ -187,6 +187,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         pivotSimState = pivotMotor.getSimState();
         pivotSimState.setSupplyVoltage(12);
         pivotSimState.setRawRotorPosition((pivotSim.getAngleRads()/(2*Math.PI)) * 64);
+        pivotSimState.setRotorVelocity((pivotSim.getAngleRads()/(2*Math.PI)) * 64);
     }
 
     @Override
