@@ -15,11 +15,11 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
     private AlgaePivotStates pivotState;
     private AlgaeDriveStates driveState;
 
-    private final HashMap<AlgaePivotStates, Angle> pivotAnglesMap = new HashMap<>();
+    private final HashMap<AlgaePivotStates, Double> pivotAnglesMap = new HashMap<>();
     private final HashMap<AlgaeDriveStates, Voltage> driveVoltageMap = new HashMap<>();
 
     private Voltage currentTargetDriveVoltage;
-    private Angle currentTargetPivotAngle;
+    private double currentTargetPivotAngle;
 
     private AlgaeIO io;
 
@@ -84,6 +84,10 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
         io.setDriveVoltage(currentTargetDriveVoltage);
     }
     public boolean hasAlgae() {return io.hasAlgae();}
+
+    public double currentPivotAngle() {
+        return io.getCurrentPivot();
+    }
 
     public static AlgaeSubsystem getInstance() {
         if (instance == null) {

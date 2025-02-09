@@ -32,7 +32,7 @@ public class AlgaeTalonFX implements AlgaeIO {
     private final StatusSignal<Temperature> pivotTemperatureSignal;
     private final StatusSignal<Current> pivotAppliedCurrentSignal;
 
-    private Angle targetPivot;
+    private double targetPivot;
 
     private final TalonFX driveMotor;
     private final VoltageOut driveVoltageControl;
@@ -56,10 +56,10 @@ public class AlgaeTalonFX implements AlgaeIO {
 
         pivotMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine; // Takes the cos of the angle and then calculates the input needed to overcome gravity
         pivotMotorConfig.Slot0.kS = 0;
-        pivotMotorConfig.Slot0.kV = .125; // Volts
+        pivotMotorConfig.Slot0.kV = 7; // Volts
         pivotMotorConfig.Slot0.kA = 0;
         pivotMotorConfig.Slot0.kG = 0;
-        pivotMotorConfig.Slot0.kP = 0;
+        pivotMotorConfig.Slot0.kP = 5;
         pivotMotorConfig.Slot0.kI = 0;
         pivotMotorConfig.Slot0.kD = 0;
 
@@ -68,23 +68,22 @@ public class AlgaeTalonFX implements AlgaeIO {
         pivotMotorConfig.Voltage.PeakForwardVoltage = 12;
         pivotMotorConfig.Voltage.PeakReverseVoltage = -12;
 
-        pivotMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 50;
-        pivotMotorConfig.MotionMagic.MotionMagicAcceleration = 100;
+        pivotMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 100;
+        pivotMotorConfig.MotionMagic.MotionMagicAcceleration = 200;
         pivotMotorConfig.MotionMagic.MotionMagicJerk = 1000;
 
-        pivotMotorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        pivotMotorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = AlgaeConstants.MAX_PIVOT.in(Units.Rotations);
-        pivotMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-        pivotMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = AlgaeConstants.MIN_PIVOT.in(Units.Rotations);
+//        pivotMotorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+//        pivotMotorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = AlgaeConstants.MAX_PIVOT.in(Units.Rotations);
+//        pivotMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+//        pivotMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = AlgaeConstants.MIN_PIVOT.in(Units.Rotations);
 
         pivotMotor.getConfigurator().apply(pivotMotorConfig);
-        pivotMotor.setPosition(AlgaeConstants.STARTING_ANGLE);
         targetPivot = AlgaeConstants.STARTING_ANGLE;
 
-        pivotControl = new MotionMagicVoltage(AlgaeConstants.STARTING_ANGLE);
+        pivotControl = new MotionMagicVoltage(.25);
         pivotControl.EnableFOC = false;
         pivotControl.Slot = 0;
-        pivotControl.LimitForwardMotion = true;
+        pivotControl.LimitForwardMotion = false;
         pivotControl.LimitReverseMotion = false;
         pivotControl.UpdateFreqHz = 1000;
 
@@ -98,12 +97,14 @@ public class AlgaeTalonFX implements AlgaeIO {
                 DCMotor.getKrakenX60(1),
                 64,
                 .001,
-                Distance.ofBaseUnits(6, Units.Inches).in(Units.Meters),
-                AlgaeConstants.MIN_PIVOT.in(Units.Radians),
-                AlgaeConstants.MAX_PIVOT.in(Units.Radians),
+                edu.wpi.first.math.util.Units.inchesToMeters(6),
+                -Math.PI,
+                Math.PI/2,
                 true,
-                AlgaeConstants.STARTING_ANGLE.in(Units.Radians)
+                0
         );
+        pivotSim.setState(Math.PI/2,0);
+        pivotMotor.setPosition(pivotSim.getAngleRads()/ (2 * Math.PI));
         pivotSimState = pivotMotor.getSimState();
 
         driveMotor = new TalonFX(AlgaeConstants.DRIVE_MOTOR_ID, AlgaeConstants.CANBUS);
@@ -122,7 +123,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         driveVoltageControl.LimitReverseMotion = false;
         driveVoltageControl.LimitForwardMotion = false;
 
-        driveAppliedVoltage = Voltage.ofBaseUnits(0, Units.Volts);
+        driveAppliedVoltage = Units.Volts.of(0);
 
         driveMotor.setControl(driveVoltageControl);
 
@@ -156,8 +157,8 @@ public class AlgaeTalonFX implements AlgaeIO {
                 driveTemperatureSignal
         );
 
-        Logger.recordOutput("Algae/Pivot/TargetAngle",targetPivot);
-        Logger.recordOutput("Algae/Pivot/Position",pivotPositionSignal.getValue());
+        Logger.recordOutput("Algae/Pivot/TargetAngle",pivotControl.Position);
+        Logger.recordOutput("Algae/Pivot/Position",pivotPositionSignal.getValue().in(Units.Radians));
         Logger.recordOutput("Algae/Pivot/Velocity",pivotVelocitySignal.getValue());
         Logger.recordOutput("Algae/Pivot/MotorTemp", pivotTemperatureSignal.getValue());
         Logger.recordOutput("Algae/Pivot/Voltage", pivotVoltageSignal.getValue());
@@ -185,7 +186,7 @@ public class AlgaeTalonFX implements AlgaeIO {
 
         pivotSimState = pivotMotor.getSimState();
         pivotSimState.setSupplyVoltage(12);
-        pivotSimState.setRawRotorPosition((pivotSim.getAngleRads()/2*Math.PI) * 64);
+        pivotSimState.setRawRotorPosition((pivotSim.getAngleRads()/(2*Math.PI)) * 64);
     }
 
     @Override
@@ -200,22 +201,26 @@ public class AlgaeTalonFX implements AlgaeIO {
     @Override
     public boolean atPivotSetpoint() {
         return MathUtil.isNear(
-                targetPivot.in(Units.Radians),
+                targetPivot,
                 pivotPositionSignal.getValue().in(Units.Radians),
-                AlgaeConstants.PIVOT_TOLERANCE.in(Units.Radians)
+                .001
         );
     }
 
     @Override
-    public void setTargetPivot(Angle angle) {
+    public void setTargetPivot(double angle) {
         targetPivot = angle;
-        pivotControl.Position = targetPivot.in(Units.Rotations);
+        pivotControl.Position = (angle / (2 * Math.PI));
     }
 
     @Override
     public void setDriveVoltage(Voltage voltage) {
         driveAppliedVoltage = voltage;
         driveVoltageControl.Output = driveAppliedVoltage.in(Units.Volts);
+    }
 
+    @Override
+    public double getCurrentPivot() {
+        return pivotPositionSignal.getValue().in(Units.Radians);
     }
 }

@@ -11,15 +11,15 @@ public class AlgaeConstants {
     public static final int DRIVE_MOTOR_ID = 15;
     public static final int LASER_ID = 16;
 
-    public static final Angle STARTING_ANGLE = Angle.ofBaseUnits(90, Units.Degrees);
-    public static final Angle STORED_ANGLE = Angle.ofBaseUnits(90, Units.Degrees);
-    public static final Angle BARGE_ANGLE = Angle.ofBaseUnits(90, Units.Degrees);
-    public static final Angle HOLD_ANGLE = Angle.ofBaseUnits(90, Units.Degrees);
-    public static final Angle PROCESSOR_ANGLE = Angle.ofBaseUnits(90, Units.Degrees);
-    public static final Angle PIVOT_TOLERANCE = Angle.ofBaseUnits(.05, Units.Degrees);
+    public static final double STARTING_ANGLE = Math.PI/2;
+    public static final double STORED_ANGLE = Math.PI/2;
+    public static final double BARGE_ANGLE = Math.PI/2;
+    public static final double HOLD_ANGLE = 0;
+    public static final double PROCESSOR_ANGLE = 0;
+    public static final double PIVOT_TOLERANCE = .01;
 
-    public static final Angle MAX_PIVOT = Angle.ofBaseUnits(90, Units.Degrees);
-    public static final Angle MIN_PIVOT = Angle.ofBaseUnits(0, Units.Degrees);
+    public static final double MAX_PIVOT = 90;
+    public static final double MIN_PIVOT = 0;
 
     public static final Distance LASER_TOLERANCE = Distance.ofBaseUnits(.05, Units.Meters);
     public static final Distance LASER_EXPECTED = Distance.ofBaseUnits(.05, Units.Meters);

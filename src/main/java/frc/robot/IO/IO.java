@@ -52,6 +52,9 @@ public abstract class IO {
                 break;
         }
 
+        controlsButtons.put(Controls.PositionL4, primary::getAButton);
+        controlsButtons.put(Controls.PositionStore, primary::getBButton);
+
         switch (secondaryProfile) {
             case KnollJoystick:
 

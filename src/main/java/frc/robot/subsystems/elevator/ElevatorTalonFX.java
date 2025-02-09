@@ -18,7 +18,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class ElevatorTalonFX implements ElevatorIO{
     private final TalonFX leader;
-    private final TalonFXSimState leaderSim;
+    private TalonFXSimState leaderSim;
     private final MotionMagicVoltage control;
 
     private final StatusSignal<Angle> positionSignal;
@@ -28,10 +28,10 @@ public class ElevatorTalonFX implements ElevatorIO{
     private LinearVelocity currentLinearVelocity = LinearVelocity.ofBaseUnits(0, Units.MetersPerSecond);
 
     private final TalonFX follower;
-    private final TalonFXSimState followerSim;
+    private TalonFXSimState followerSim;
     private final Follower followerControl;
 
-    private Distance targetHeight = Distance.ofBaseUnits(0, Units.Inch);
+    private double targetHeight = 0;
 
     private final StatusSignal<Temperature> leaderTempSignal;
     private final StatusSignal<Current> leaderCurrentSignal;
@@ -59,19 +59,19 @@ public class ElevatorTalonFX implements ElevatorIO{
         // Motion config
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-        config.Slot0.kG = 0;
-        config.Slot0.kV = .124;
-        config.Slot0.kP = 0;
+        config.Slot0.kG = .4;
+        config.Slot0.kV = 6;
+        config.Slot0.kP = 2;
         config.Slot0.kI = 0;
         config.Slot0.kD = 0;
         // Configure pid controller
-        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
         config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
-        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
         config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 100; // Test to set the upper limit
 
-        config.MotionMagic.MotionMagicCruiseVelocity = 50;
-        config.MotionMagic.MotionMagicAcceleration = 50;
+        config.MotionMagic.MotionMagicCruiseVelocity = 100;
+        config.MotionMagic.MotionMagicAcceleration = 250;
         config.MotionMagic.MotionMagicJerk = 1000;
 
         leader.getConfigurator().apply(config);
@@ -89,8 +89,8 @@ public class ElevatorTalonFX implements ElevatorIO{
         followerCurrentSignal = follower.getSupplyCurrent();
         followerAppliedVoltageSignal = follower.getMotorVoltage();
 
-        leader.setPosition(0);
-        leader.setPosition(0);
+
+        leader.setPosition(0,3);
 
         control = new MotionMagicVoltage(0);
         control.EnableFOC = false;
@@ -104,14 +104,14 @@ public class ElevatorTalonFX implements ElevatorIO{
         elevatorSim = new ElevatorSim(
                 DCMotor.getKrakenX60(2),
                 6,
-                Mass.ofBaseUnits(35, Units.Pounds).in(Units.Kilograms),
-                Distance.ofBaseUnits(.98, Units.Inch).in(Units.Meters),
-                Distance.ofBaseUnits(0, Units.Meters).in(Units.Meters), // Min height
-                Distance.ofBaseUnits(100, Units.Meters).in(Units.Meters), // Max height
+                15,
+                Units.Inches.of(.98).in(Units.Meters),
+                0,// Min height
+                10,
                 true, // Sim gravity
-                Distance.ofBaseUnits(0, Units.Meters).in(Units.Meters), // Min height, // Starting height,
-                0,
-                0
+                .01,
+                0.000000001,
+                .0000000001
         );
     }
 
@@ -120,7 +120,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         StatusSignal.refreshAll(positionSignal,
                 velocitySignal,
                 leaderAppliedVoltageSignal,
-                leaderAppliedVoltageSignal,
+                leaderCurrentSignal,
                 leaderTempSignal,
                 followerAppliedVoltageSignal,
                 followerTempSignal,
@@ -129,12 +129,13 @@ public class ElevatorTalonFX implements ElevatorIO{
                 followerTempSignal
         );
 
-        currentHeight = Distance.ofBaseUnits(positionSignal.getValue().in(Units.Rotations) / ElevatorConstants.CONVERSION_FACTOR, Units.Inches);
+//        currentHeight = positionSignal.getValue().in(Units.Rotations) / ElevatorConstants.CONVERSION_FACTOR;
+//        currentHeight = Distance.ofBaseUnits(positionSignal.getValue().in(Units.Rotations) / ElevatorConstants.CONVERSION_FACTOR, Units.Inches);
         currentLinearVelocity = LinearVelocity.ofBaseUnits(velocitySignal.getValue().in(Units.RotationsPerSecond) / ElevatorConstants.CONVERSION_FACTOR, Units.InchesPerSecond);
 
-        Logger.recordOutput("Elevator/CurrentHeight", currentHeight);
+        Logger.recordOutput("Elevator/CurrentHeight", positionSignal.getValue().in(Units.Rotations) / ElevatorConstants.CONVERSION_FACTOR);
         Logger.recordOutput("Elevator/CurrentLinearVelocity", currentLinearVelocity);
-        Logger.recordOutput("Elevator/AtTargetHeight", getHeight());
+        Logger.recordOutput("Elevator/AtTargetHeight", atSetpoint());
 
         Logger.recordOutput("Elevator/Leader/Voltage", leaderAppliedVoltageSignal.getValue().in(Units.Volts));
         Logger.recordOutput("Elevator/Leader/Current", leaderCurrentSignal.getValue().in(Units.Amps));
@@ -147,7 +148,7 @@ public class ElevatorTalonFX implements ElevatorIO{
 
     @Override
     public void writePeriodic() {
-        control.Position = targetHeight.in(Units.Inch) * ElevatorConstants.CONVERSION_FACTOR;
+        control.Position = targetHeight * ElevatorConstants.CONVERSION_FACTOR;
         leader.setControl(control);
         follower.setControl(followerControl);
     }
@@ -156,30 +157,29 @@ public class ElevatorTalonFX implements ElevatorIO{
     public void simulationPeriodic() {
         elevatorSim.setInputVoltage(leaderAppliedVoltageSignal.getValue().in(Units.Volts));
         elevatorSim.update(Robot.PERIOD);
-        Angle position = Angle.ofBaseUnits(
-                Distance.ofBaseUnits(
-                        elevatorSim.getPositionMeters(), Units.Meters).in(Units.Inch) / ElevatorConstants.CONVERSION_FACTOR,
-                Units.Rotations);
 
+        double heightIn = edu.wpi.first.math.util.Units.metersToInches(elevatorSim.getPositionMeters());
+        leaderSim = leader.getSimState();
         leaderSim.setSupplyVoltage(12);
-        leaderSim.setRawRotorPosition(position);
+        leaderSim.setRawRotorPosition(heightIn / ElevatorConstants.CONVERSION_FACTOR);
+        followerSim = follower.getSimState();
         followerSim.setSupplyVoltage(12);
-        followerSim.setRawRotorPosition(position);
+        followerSim.setRawRotorPosition(heightIn / ElevatorConstants.CONVERSION_FACTOR);
     }
 
     @Override
-    public void setElevator(Distance targetHeight) {
+    public void setElevator(double targetHeight) {
         this.targetHeight = targetHeight;
     }
 
     @Override
-    public Distance getHeight() {
+    public double getHeight() {
         double rotations = positionSignal.getValue().in(Units.Rotations);
-        return Distance.ofBaseUnits(rotations/ElevatorConstants.CONVERSION_FACTOR, Units.Inch);
+        return rotations/ElevatorConstants.CONVERSION_FACTOR;
     }
 
     @Override
     public boolean atSetpoint() {
-        return MathUtil.isNear(targetHeight.in(Units.Inch), getHeight().in(Units.Inch), .125);
+        return MathUtil.isNear(targetHeight, getHeight(), .125);
     }
 }

@@ -1,6 +1,8 @@
 package frc.robot.subsystems.coral;
 
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 
 public class CoralConstants {
@@ -16,5 +18,8 @@ public class CoralConstants {
     public static final Voltage SOURCE_VOLTAGE = Voltage.ofBaseUnits(0, Units.Volts);
     public static final Voltage REEF_SCORE_VOLTAGE = Voltage.ofBaseUnits(0, Units.Volts);
     public static final Voltage TROUGH_SCORE_VOLTAGE = Voltage.ofBaseUnits(0, Units.Volts);
+
+    public static final Rotation3d FWD_ANGLE = new Rotation3d(0,Math.toRadians(-55), 0);
+    public static final Rotation3d REV_ANGLE = new Rotation3d(0,Math.toRadians(35), 0);
 }
 

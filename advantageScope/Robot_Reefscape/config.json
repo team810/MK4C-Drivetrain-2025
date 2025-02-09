@@ -1,0 +1,44 @@
+{
+    "name": "Reefscape",
+    "rotations": [
+        {"axis": "x", "degrees": 90}
+    ],
+    "position": [
+        0,
+        0,
+        0
+    ],
+    "components": [
+        {
+            "zeroedRotations": [
+                {"axis" : "x", "degrees": 90}
+            ],
+            "zeroedPosition": [
+                0,
+                -0.10,
+                -0.18
+            ]
+        },
+        {
+            "zeroedRotations": [
+                {"axis" : "x", "degrees": 90}
+            ],
+            "zeroedPosition": [
+                0,
+                -0.2,
+                -0.35
+            ]
+        },
+        {
+            "zeroedRotations": [
+                {"axis" : "x", "degrees": 90},
+                {"axis" : "y", "degrees": -31}
+            ],
+            "zeroedPosition": [
+                -0.04,
+                -0.23,
+                -0.25
+            ]
+        }
+    ]
+}

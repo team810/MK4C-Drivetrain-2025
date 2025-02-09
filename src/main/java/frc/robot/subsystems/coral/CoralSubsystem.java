@@ -1,6 +1,8 @@
 package frc.robot.subsystems.coral;
 
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import frc.robot.lib.AdvancedSubsystem;
@@ -39,6 +41,7 @@ public class CoralSubsystem extends AdvancedSubsystem {
         pistonStateMap.put(CoralPistonState.Trough, DoubleSolenoid.Value.kReverse);
 
         io = new CoralTalonFX();
+        io.setPistonState(DoubleSolenoid.Value.kReverse);
     }
 
     @Override
@@ -65,6 +68,14 @@ public class CoralSubsystem extends AdvancedSubsystem {
 
     public boolean hasCoral() {
         return io.hasCoral();
+    }
+
+    public Rotation3d getAngle() {
+        if (io.getPistonState() == DoubleSolenoid.Value.kForward) {
+            return CoralConstants.FWD_ANGLE;
+        }else{
+            return CoralConstants.REV_ANGLE;
+        }
     }
 
     public void setCoralMotorState(CoralMotorState motorState) {

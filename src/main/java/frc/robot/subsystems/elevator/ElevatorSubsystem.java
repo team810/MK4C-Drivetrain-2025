@@ -1,5 +1,6 @@
 package frc.robot.subsystems.elevator;
 
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.lib.AdvancedSubsystem;
 import org.littletonrobotics.junction.Logger;
@@ -10,9 +11,9 @@ import java.util.HashMap;
 public class ElevatorSubsystem extends AdvancedSubsystem {
     private static ElevatorSubsystem instance;
 
-    private final HashMap<ElevatorState, Distance> elevatorHeights; // Inches
+    private final HashMap<ElevatorState, Double> elevatorHeights; // Inches
     private ElevatorState currentState;
-    private Distance targetHeight;
+    private double targetHeight;
 
     private final ElevatorIO io;
 
@@ -32,10 +33,8 @@ public class ElevatorSubsystem extends AdvancedSubsystem {
         elevatorHeights.put(ElevatorState.StoreCoral, ElevatorConstants.STORE_CORAL_HEIGHT);
         elevatorHeights.put(ElevatorState.StoreAlgae, ElevatorConstants.STORE_ALGAE_HEIGHT);
 
-        targetHeight = elevatorHeights.get(currentState);
-
         io = new ElevatorTalonFX();
-
+        setElevatorState(ElevatorState.StoreCoral);
     }
 
 
@@ -67,6 +66,10 @@ public class ElevatorSubsystem extends AdvancedSubsystem {
     }
 
     public ElevatorState getElevatorState() {return currentState;}
+
+    public double getCurrentHeight() {
+        return io.getHeight();
+    }
 
     public static ElevatorSubsystem getInstance() {
         if (instance == null) {
