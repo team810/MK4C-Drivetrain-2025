@@ -56,9 +56,8 @@ public class AlgaeTalonFX implements AlgaeIO {
 
         pivotMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine; // Takes the cos of the angle and then calculates the input needed to overcome gravity
         pivotMotorConfig.Slot0.kS = 0;
-        pivotMotorConfig.Slot0.kV = .125; // Volts
         pivotMotorConfig.Slot0.kA = 0;
-        pivotMotorConfig.Slot0.kG = 0;
+        pivotMotorConfig.Slot0.kG = .25;
         pivotMotorConfig.Slot0.kP = 64 * 5;
         pivotMotorConfig.Slot0.kI = 0;
         pivotMotorConfig.Slot0.kD = 0;
@@ -96,7 +95,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         pivotSim = new SingleJointedArmSim(
                 DCMotor.getKrakenX60(1),
                 64,
-                .001,
+                .148,
                 edu.wpi.first.math.util.Units.inchesToMeters(6),
                 -Math.PI,
                 Math.PI/2,

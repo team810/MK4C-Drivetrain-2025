@@ -16,10 +16,10 @@ import frc.robot.subsystems.elevator.ElevatorSubsystem;
 public class CommandFactory {
 
     public static Command getScoreAlgaeCommand() {
-        return new InstantCommand();
+        return new InstantCommand(() -> {});
     }
     public static Command getScoreCoralCommand() {
-        return new InstantCommand();
+        return new InstantCommand(() -> {});
     }
 
     public static Command PositionL4() {

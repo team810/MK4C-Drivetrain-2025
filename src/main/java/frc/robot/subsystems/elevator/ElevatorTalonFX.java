@@ -4,7 +4,6 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -61,13 +60,25 @@ public class ElevatorTalonFX implements ElevatorIO{
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
         config.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
-        config.Slot0.kG = .5;
-        config.Slot0.kP = 2;
-        config.Slot0.kI = 0;
-        config.Slot0.kD = 0;
+        if (Robot.isReal()) {
+            config.Slot0.kG = .5;
+            config.Slot0.kP = 0;
+            config.Slot0.kI = 0;
+            config.Slot0.kD = 0;
 
-        config.MotionMagic.MotionMagicCruiseVelocity = 100;
-        config.MotionMagic.MotionMagicAcceleration = 250;
+            config.MotionMagic.MotionMagicCruiseVelocity = 50;
+            config.MotionMagic.MotionMagicAcceleration = 100;
+            config.MotionMagic.MotionMagicJerk = 1000;
+        }else{
+            config.Slot0.kG = .5;
+            config.Slot0.kP = 2;
+            config.Slot0.kI = 0;
+            config.Slot0.kD = 0;
+
+            config.MotionMagic.MotionMagicCruiseVelocity = 100;
+            config.MotionMagic.MotionMagicAcceleration = 250;
+            config.MotionMagic.MotionMagicJerk = 1000;
+        }
 
         leader.getConfigurator().apply(config);
         follower.getConfigurator().apply(config);
@@ -82,7 +93,6 @@ public class ElevatorTalonFX implements ElevatorIO{
         followerTempSignal = follower.getDeviceTemp();
         followerCurrentSignal = follower.getSupplyCurrent();
         followerAppliedVoltageSignal = follower.getMotorVoltage();
-
 
         leader.setPosition(0,3);
 

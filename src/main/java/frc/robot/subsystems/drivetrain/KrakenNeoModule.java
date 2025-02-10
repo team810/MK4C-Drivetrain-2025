@@ -22,7 +22,6 @@ import org.littletonrobotics.junction.Logger;
 
 import static edu.wpi.first.units.Units.*;
 
-// Current does not require pro
 public class KrakenNeoModule implements SwerveModuleIO{
     private final SwerveModuleID id;
     private final String idString;
