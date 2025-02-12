@@ -83,16 +83,18 @@ public class ClimberSubsystem extends AdvancedSubsystem {
     }
 
     public void changeAlliance(DriverStation.Alliance alliance) {
-        if (alliance == DriverStation.Alliance.Blue) {
-            LimelightHelpers.setPipelineIndex(
-                    ClimberConstants.CLIMB_LL,
-                    ClimberConstants.BLUE_PIPELINE
-            );
-        }else{
-            LimelightHelpers.setPipelineIndex(
-                    ClimberConstants.CLIMB_LL,
-                    ClimberConstants.RED_PIPELINE
-            );
+        if (usingLL()) {
+            if (alliance == DriverStation.Alliance.Blue) {
+                LimelightHelpers.setPipelineIndex(
+                        ClimberConstants.CLIMB_LL,
+                        ClimberConstants.BLUE_PIPELINE
+                );
+            }else{
+                LimelightHelpers.setPipelineIndex(
+                        ClimberConstants.CLIMB_LL,
+                        ClimberConstants.RED_PIPELINE
+                );
+            }
         }
     }
 

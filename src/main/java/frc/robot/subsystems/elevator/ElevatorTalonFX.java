@@ -99,7 +99,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         followerAppliedVoltageSignal = follower.getMotorVoltage();
 
         control = new MotionMagicVoltage(0);
-        control.EnableFOC = false;
+        control.EnableFOC = true;
         control.Slot = 0;
         control.UseTimesync = false;
 
@@ -112,9 +112,9 @@ public class ElevatorTalonFX implements ElevatorIO{
         currentHeight = Inches.of(positionSignal.getValue().in(Rotations) / ElevatorConstants.CONVERSION_FACTOR);
 
         elevatorSim = new ElevatorSim(
-                DCMotor.getKrakenX60(2),
+                DCMotor.getKrakenX60Foc(2),
                 6,
-                15,
+                Pounds.of(25).in(Kilograms),
                 ElevatorConstants.DRUM_RADIUS.in(Meters),
                 0,// Min height
                 ElevatorConstants.ELEVATOR_MAX_HEIGHT.in(Meters),
