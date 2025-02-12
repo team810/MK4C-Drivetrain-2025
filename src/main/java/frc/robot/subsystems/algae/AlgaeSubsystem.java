@@ -15,13 +15,13 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
     private AlgaePivotStates pivotState;
     private AlgaeDriveStates driveState;
 
-    private final HashMap<AlgaePivotStates, Double> pivotAnglesMap = new HashMap<>();
+    private final HashMap<AlgaePivotStates, Angle> pivotAnglesMap = new HashMap<>();
     private final HashMap<AlgaeDriveStates, Voltage> driveVoltageMap = new HashMap<>();
 
     private Voltage currentTargetDriveVoltage;
-    private double currentTargetPivotAngle;
+    private Angle currentTargetPivotAngle;
 
-    private AlgaeIO io;
+    private final AlgaeIO io;
 
     public AlgaeSubsystem() {
         pivotState = AlgaePivotStates.Stored;
@@ -67,27 +67,28 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
     public boolean atPivotSetpoint() {
         return io.atPivotSetpoint();
     }
-    public AlgaePivotStates getPivotState() {
-        return pivotState;
-    }
-    public AlgaeDriveStates getDriveState() {
-        return driveState;
-    }
     public void setPivotState(AlgaePivotStates pivotState) {
         this.pivotState = pivotState;
         currentTargetPivotAngle = pivotAnglesMap.get(this.pivotState);
         io.setTargetPivot(currentTargetPivotAngle);
+    }
+    public double currentPivotAngle() {
+        return io.getCurrentPivot();
+    }
+    public AlgaePivotStates getPivotState() {
+        return pivotState;
+    }
+
+    public AlgaeDriveStates getDriveState() {
+        return driveState;
     }
     public void setDriveState(AlgaeDriveStates driveState) {
         this.driveState = driveState;
         currentTargetDriveVoltage = driveVoltageMap.get(this.driveState);
         io.setDriveVoltage(currentTargetDriveVoltage);
     }
-    public boolean hasAlgae() {return io.hasAlgae();}
 
-    public double currentPivotAngle() {
-        return io.getCurrentPivot();
-    }
+    public boolean hasAlgae() {return io.hasAlgae();}
 
     public static AlgaeSubsystem getInstance() {
         if (instance == null) {
