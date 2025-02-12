@@ -10,7 +10,7 @@ public interface AlgaeIO {
 
     public boolean hasAlgae();
     public boolean atPivotSetpoint();
-    public void setTargetPivot(double angle);
+    public void setTargetPivot(Angle angle);
     public void setDriveVoltage(Voltage voltage);
     public double getCurrentPivot();
 }

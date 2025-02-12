@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Robot;
 import org.littletonrobotics.junction.Logger;
 
+import static edu.wpi.first.units.Units.*;
+
 // CCW+ 0 is horizontal to the ground, 90 is straight up
 public class AlgaeTalonFX implements AlgaeIO {
     private final TalonFX pivotMotor;
@@ -32,7 +34,7 @@ public class AlgaeTalonFX implements AlgaeIO {
     private final StatusSignal<Temperature> pivotTemperatureSignal;
     private final StatusSignal<Current> pivotAppliedCurrentSignal;
 
-    private double targetPivot;
+    private Angle targetPivot;
 
     private final TalonFX driveMotor;
     private final VoltageOut driveVoltageControl;
@@ -51,14 +53,16 @@ public class AlgaeTalonFX implements AlgaeIO {
         TalonFXConfiguration pivotMotorConfig = new TalonFXConfiguration();
         pivotMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        pivotMotorConfig.CurrentLimits.SupplyCurrentLimit = 30;
+        pivotMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
         pivotMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        pivotMotorConfig.CurrentLimits.StatorCurrentLimit = 40;
+        pivotMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
         pivotMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine; // Takes the cos of the angle and then calculates the input needed to overcome gravity
-        pivotMotorConfig.Slot0.kS = 0;
-        pivotMotorConfig.Slot0.kA = 0;
-        pivotMotorConfig.Slot0.kG = .25;
-        pivotMotorConfig.Slot0.kP = 64 * 5;
+        pivotMotorConfig.Slot0.kG = .22;
+        pivotMotorConfig.Slot0.kV = 7.68;
+        pivotMotorConfig.Slot0.kA = .01;
+        pivotMotorConfig.Slot0.kP = 6;
         pivotMotorConfig.Slot0.kI = 0;
         pivotMotorConfig.Slot0.kD = 0;
 
@@ -77,10 +81,10 @@ public class AlgaeTalonFX implements AlgaeIO {
 //        pivotMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = AlgaeConstants.MIN_PIVOT.in(Units.Rotations);
 
         pivotMotor.getConfigurator().apply(pivotMotorConfig);
-        targetPivot = AlgaeConstants.STARTING_ANGLE;
+        targetPivot = AlgaeConstants.STORED_ANGLE;
 
-        pivotControl = new MotionMagicVoltage(.25);
-        pivotControl.EnableFOC = false;
+        pivotControl = new MotionMagicVoltage(AlgaeConstants.STORED_ANGLE);
+        pivotControl.EnableFOC = true;
         pivotControl.Slot = 0;
         pivotControl.LimitForwardMotion = false;
         pivotControl.LimitReverseMotion = false;
@@ -93,23 +97,26 @@ public class AlgaeTalonFX implements AlgaeIO {
         pivotAppliedCurrentSignal = pivotMotor.getSupplyCurrent();
 
         pivotSim = new SingleJointedArmSim(
-                DCMotor.getKrakenX60(1),
+                DCMotor.getKrakenX60Foc(1),
                 64,
                 .148,
                 edu.wpi.first.math.util.Units.inchesToMeters(6),
-                -Math.PI,
-                Math.PI/2,
+                AlgaeConstants.MIN_PIVOT.in(Radians),
+                AlgaeConstants.MAX_PIVOT.in(Radians),
                 true,
-                0
+                AlgaeConstants.STORED_ANGLE.in(Radians)
         );
-        pivotSim.setState(Math.PI/2,0);
-        pivotMotor.setPosition(pivotSim.getAngleRads()/ (2 * Math.PI));
-        pivotSimState = pivotMotor.getSimState();
+        pivotSim.setState(AlgaeConstants.STORED_ANGLE.in(Radians),0);
+        if (Robot.isReal()) {
+            pivotMotor.setPosition(AlgaeConstants.STORED_ANGLE.in(Rotations));
+        }
 
         driveMotor = new TalonFX(AlgaeConstants.DRIVE_MOTOR_ID, AlgaeConstants.CANBUS);
         TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
         driveMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        driveMotorConfig.CurrentLimits.SupplyCurrentLimit = 30;
+        driveMotorConfig.CurrentLimits.SupplyCurrentLimit = 80;
+        driveMotorConfig.CurrentLimits.StatorCurrentLimit = 160;
+        driveMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         driveMotorConfig.Voltage.PeakForwardVoltage = 12;
         driveMotorConfig.Voltage.PeakReverseVoltage = -12;
         driveMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -186,7 +193,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         pivotSimState = pivotMotor.getSimState();
         pivotSimState.setSupplyVoltage(12);
         pivotSimState.setRawRotorPosition((pivotSim.getAngleRads()/(2*Math.PI)) * 64);
-        pivotSimState.setRotorVelocity((pivotSim.getAngleRads()/(2*Math.PI)) * 64);
+        pivotSimState.setRotorVelocity((pivotSim.getVelocityRadPerSec()/(2*Math.PI)) * 64);
     }
 
     @Override
@@ -201,16 +208,16 @@ public class AlgaeTalonFX implements AlgaeIO {
     @Override
     public boolean atPivotSetpoint() {
         return MathUtil.isNear(
-                targetPivot,
+                targetPivot.in(Radians),
                 pivotPositionSignal.getValue().in(Units.Radians),
-                .001
+            AlgaeConstants.PIVOT_TOLERANCE.in(Units.Radians)
         );
     }
 
     @Override
-    public void setTargetPivot(double angle) {
+    public void setTargetPivot(Angle angle) {
         targetPivot = angle;
-        pivotControl.Position = (angle / (2 * Math.PI));
+        pivotControl.Position = angle.in(Rotations);
     }
 
     @Override

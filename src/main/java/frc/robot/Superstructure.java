@@ -15,12 +15,15 @@ import frc.robot.IO.Controls;
 import frc.robot.IO.IO;
 import frc.robot.commands.CommandFactory;
 import frc.robot.subsystems.algae.AlgaeConstants;
+import frc.robot.subsystems.algae.AlgaePivotStates;
 import frc.robot.subsystems.algae.AlgaeSubsystem;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.coral.CoralSubsystem;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import org.littletonrobotics.junction.Logger;
+
+import static edu.wpi.first.units.Units.Meters;
 
 public class Superstructure {
     private static Superstructure instance;
@@ -51,8 +54,8 @@ public class Superstructure {
     }
 
     public void configureActions() {
-        new Trigger(IO.getButtonValue(Controls.PositionL4)).onTrue(CommandFactory.PositionL4());
-        new Trigger(IO.getButtonValue(Controls.PositionL3)).onTrue(CommandFactory.PositionL3());
+        new Trigger(IO.getButtonValue(Controls.PositionL4)).onTrue(new InstantCommand(() -> {AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Processor);}));
+        new Trigger(IO.getButtonValue(Controls.PositionL3)).onTrue(new InstantCommand(() -> {AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Stored);}));
         new Trigger(IO.getButtonValue(Controls.PositionL2)).onTrue(CommandFactory.PositionL2());
         new Trigger(IO.getButtonValue(Controls.PositionTrough)).onTrue(CommandFactory.PositionTrough());
         new Trigger(IO.getButtonValue(Controls.PositionBarge)).onTrue(CommandFactory.PositionBarge());
@@ -76,11 +79,10 @@ public class Superstructure {
         Logger.recordOutput("SuperStructure/Alliance", alliance);
         Logger.recordOutput("SuperStructure/Pressure", pneumaticsControlModule.getPressure(0));
 
-        double elevatorHeight = edu.wpi.first.math.util.Units.inchesToMeters(ElevatorSubsystem.getInstance().getCurrentHeight());
-        Pose3d secondStage = new Pose3d(0,0,elevatorHeight * .32419, new Rotation3d());
-        Pose3d insideStage = new Pose3d(0,0, elevatorHeight * .67, new Rotation3d());
+        Pose3d secondStage = new Pose3d(0,0,ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) * .32419, new Rotation3d());
+        Pose3d insideStage = new Pose3d(0,0, ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) * .67, new Rotation3d());
 
-        Pose3d carriage = new Pose3d(0, .1, edu.wpi.first.math.util.Units.inchesToMeters(ElevatorSubsystem.getInstance().getCurrentHeight()) + 0.18,new Rotation3d());
+        Pose3d carriage = new Pose3d(0, .1, ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) + 0.18,new Rotation3d());
         Pose3d algae = new Pose3d(0, .2,carriage.getZ() + .17,new Rotation3d(Math.toRadians(-63) + AlgaeSubsystem.getInstance().currentPivotAngle(),0,0));
         Pose3d coral = new Pose3d(.15,.23,carriage.getZ() + .07,CoralSubsystem.getInstance().getAngle());
 

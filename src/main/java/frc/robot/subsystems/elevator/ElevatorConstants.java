@@ -1,7 +1,8 @@
 package frc.robot.subsystems.elevator;
 
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
+
+import static edu.wpi.first.units.Units.*;
 
 public class ElevatorConstants {
     public static final int PRIMARY_MOTOR_ID = 10;
@@ -9,17 +10,19 @@ public class ElevatorConstants {
 
     public static final double CONVERSION_FACTOR = 1.0911; // rotations/in
 
-    public static final double SOURCE_HEIGHT = 20;
-    public static final double L4_HEIGHT = 70;
-    public static final double L3_HEIGHT = 50;
-    public static final double L2_HEIGHT = 30;
-    public static final double TROUGH_HEIGHT = 20;
-    public static final double PROCESSOR_HEIGHT = 5;
-    public static final double ALGAE_HIGH_HEIGHT = 70;
-    public static final double ALGAE_MIDDLE_HEIGHT = 50;
-    public static final double BARGE_HEIGHT = 75;
-    public static final double STORE_CORAL_HEIGHT = 5;
-    public static final double STORE_ALGAE_HEIGHT = 5;
-    
+    public static final Distance SOURCE_HEIGHT = Inches.of(20);
+    public static final Distance L4_HEIGHT = Inches.of(70);
+    public static final Distance L3_HEIGHT = Inches.of(50);
+    public static final Distance L2_HEIGHT = Inches.of(30);
+    public static final Distance TROUGH_HEIGHT = Inches.of(20);
+    public static final Distance PROCESSOR_HEIGHT = Inches.of(5);
+    public static final Distance ALGAE_HIGH_HEIGHT = Inches.of(70);
+    public static final Distance ALGAE_MIDDLE_HEIGHT = Inches.of(50);
+    public static final Distance BARGE_HEIGHT = Inches.of(75);
+    public static final Distance STORE_CORAL_HEIGHT = Inches.of(5);
+    public static final Distance STORE_ALGAE_HEIGHT = Inches.of(5);
+
+    public static final Distance DRUM_RADIUS = Inches.of(.98);
+    public static final Distance ELEVATOR_MAX_HEIGHT = Inches.of(90);
 
 }

@@ -15,11 +15,11 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
     private AlgaePivotStates pivotState;
     private AlgaeDriveStates driveState;
 
-    private final HashMap<AlgaePivotStates, Double> pivotAnglesMap = new HashMap<>();
+    private final HashMap<AlgaePivotStates, Angle> pivotAnglesMap = new HashMap<>();
     private final HashMap<AlgaeDriveStates, Voltage> driveVoltageMap = new HashMap<>();
 
     private Voltage currentTargetDriveVoltage;
-    private double currentTargetPivotAngle;
+    private Angle currentTargetPivotAngle;
 
     private AlgaeIO io;
 
