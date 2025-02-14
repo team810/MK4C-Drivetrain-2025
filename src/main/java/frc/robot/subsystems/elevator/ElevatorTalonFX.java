@@ -33,8 +33,9 @@ public class ElevatorTalonFX implements ElevatorIO{
     private final StatusSignal<AngularVelocity> velocitySignal;
 
     private final StatusSignal<Temperature> leaderTempSignal;
-    private final StatusSignal<Current> leaderCurrentSignal;
     private final StatusSignal<Voltage> leaderAppliedVoltageSignal;
+    private final StatusSignal<Current> leaderSupplyCurrentSignal;
+    private final StatusSignal<Current> leaderAppliedCurrentSignal;
 
     private final StatusSignal<Temperature> followerTempSignal;
     private final StatusSignal<Current> followerCurrentSignal;
@@ -91,8 +92,9 @@ public class ElevatorTalonFX implements ElevatorIO{
         velocitySignal = leader.getVelocity();
 
         leaderTempSignal = leader.getDeviceTemp();
-        leaderCurrentSignal = leader.getSupplyCurrent();
         leaderAppliedVoltageSignal = leader.getMotorVoltage();
+        leaderAppliedCurrentSignal = leader.getStatorCurrent();
+        leaderSupplyCurrentSignal = leader.getSupplyCurrent();
 
         followerTempSignal = follower.getDeviceTemp();
         followerCurrentSignal = follower.getSupplyCurrent();
@@ -130,7 +132,8 @@ public class ElevatorTalonFX implements ElevatorIO{
         StatusSignal.refreshAll(positionSignal,
                 velocitySignal,
                 leaderAppliedVoltageSignal,
-                leaderCurrentSignal,
+                leaderSupplyCurrentSignal,
+                leaderAppliedCurrentSignal,
                 leaderTempSignal,
                 followerAppliedVoltageSignal,
                 followerTempSignal,
@@ -149,7 +152,8 @@ public class ElevatorTalonFX implements ElevatorIO{
         Logger.recordOutput("Elevator/RawEncoder", positionSignal.getValue().in(Rotations));
 
         Logger.recordOutput("Elevator/Leader/Voltage", leaderAppliedVoltageSignal.getValue().in(Units.Volts));
-        Logger.recordOutput("Elevator/Leader/Current", leaderCurrentSignal.getValue().in(Units.Amps));
+        Logger.recordOutput("Elevator/Leader/AppliedCurrent", leaderAppliedCurrentSignal.getValue().in(Units.Amps));
+        Logger.recordOutput("Elevator/Leader/SupplyCurrent", leaderSupplyCurrentSignal.getValue().in(Amps));
         Logger.recordOutput("Elevator/Leader/Temperature",leaderTempSignal.getValue().in(Units.Fahrenheit));
 
         Logger.recordOutput("Elevator/Follower/Voltage", followerAppliedVoltageSignal.getValue().in(Units.Volts));

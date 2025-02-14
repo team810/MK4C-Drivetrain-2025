@@ -43,6 +43,7 @@ public class AlgaeTalonFX implements AlgaeIO {
     private final StatusSignal<Voltage> driveVoltageSignal;
     private final StatusSignal<Temperature> driveTemperatureSignal;
     private final StatusSignal<Current> driveAppliedCurrentSignal;
+    private final StatusSignal<Current> driveSupplyCurrentSignal;
 
     private final CANrange laser;
     private final StatusSignal<Distance> distanceSignal;
@@ -134,8 +135,9 @@ public class AlgaeTalonFX implements AlgaeIO {
         driveMotor.setControl(driveVoltageControl);
 
         driveVoltageSignal = driveMotor.getMotorVoltage();
-        driveAppliedCurrentSignal = driveMotor.getSupplyCurrent();
         driveTemperatureSignal = driveMotor.getDeviceTemp();
+        driveAppliedCurrentSignal = driveMotor.getStatorCurrent();
+        driveSupplyCurrentSignal = driveMotor.getSupplyCurrent();
 
         laser = new CANrange(AlgaeConstants.LASER_ID, AlgaeConstants.CANBUS);
         CANrangeConfiguration laserConfig = new CANrangeConfiguration();
@@ -159,8 +161,9 @@ public class AlgaeTalonFX implements AlgaeIO {
                 detectedSignal,
 
                 driveVoltageSignal,
+                driveTemperatureSignal,
                 driveAppliedCurrentSignal,
-                driveTemperatureSignal
+                driveSupplyCurrentSignal
         );
 
         Logger.recordOutput("Algae/Pivot/TargetAngle",pivotControl.Position);

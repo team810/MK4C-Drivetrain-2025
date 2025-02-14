@@ -2,7 +2,6 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.ManualDriveCommand;
 import frc.robot.commands.auto.AutoFactory;
@@ -18,6 +17,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
     public static final double PERIOD = .020;
     private final AutoFactory autoFactory;
+
 
     public Robot()
     {
@@ -73,6 +73,7 @@ public class Robot extends LoggedRobot {
     
     @Override
     public void autonomousInit() {
+        DrivetrainSubsystem.getInstance().setImuMode(2);
         CommandScheduler.getInstance().schedule(autoFactory.getAutoCommand());
     }
     
@@ -84,7 +85,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopInit() {
-
+        DrivetrainSubsystem.getInstance().setImuMode(2);
         CommandScheduler.getInstance().schedule(new ManualDriveCommand());
     }
 
@@ -94,12 +95,14 @@ public class Robot extends LoggedRobot {
     
     @Override
     public void disabledInit() {
+        DrivetrainSubsystem.getInstance().setImuMode(1);
     }
     
     
     @Override
     public void disabledPeriodic() {
         Superstructure.getInstance().disabledPeriodic();
+        DrivetrainSubsystem.getInstance().resetLLGyro();
     }
 
     @Override

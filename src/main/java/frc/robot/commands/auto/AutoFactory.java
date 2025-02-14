@@ -373,6 +373,7 @@ public class AutoFactory {
         Trajectory<SwerveSample> part3;
         Trajectory<SwerveSample> part4;
         Trajectory<SwerveSample> part5;
+
         if (Superstructure.getInstance().getAlliance() == DriverStation.Alliance.Blue) {
             part1 = trajectoriesBlue.get(startPath);
             part2 = trajectoriesBlue.get(toSource1);
@@ -385,6 +386,12 @@ public class AutoFactory {
             part3 = trajectoriesRed.get(sourceTo2);
             part4 = trajectoriesRed.get(toSource2);
             part5 = trajectoriesRed.get(sourceTo3);
+        }
+
+        if (part1 == null || part2 == null || part3 == null || part4 == null || part5 == null) {
+            System.out.println("Error Generating Auto Null path");
+            autoCommand = new InstantCommand(() -> System.out.println("Problem with auto"));
+            return;
         }
 
         DrivetrainSubsystem.getInstance().resetPose(part1.getInitialPose(false).get());
@@ -415,6 +422,7 @@ public class AutoFactory {
                 ),
                 score()
         );
+        System.out.println("Auto Generated");
     }
 
     public Command score() {
@@ -442,7 +450,6 @@ public class AutoFactory {
     }
 
     private Command generateFollowTrajectoryCommand(Trajectory<SwerveSample> trajectory) {
-
         return new SequentialCommandGroup(
                 new FollowTrajectory(trajectory),
                 new GoToPose(trajectory.getFinalPose(false).get())

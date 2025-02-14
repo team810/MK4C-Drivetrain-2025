@@ -5,8 +5,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -14,10 +12,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.IO.Controls;
 import frc.robot.IO.IO;
 import frc.robot.commands.CommandFactory;
-import frc.robot.subsystems.algae.AlgaeConstants;
 import frc.robot.subsystems.algae.AlgaePivotStates;
 import frc.robot.subsystems.algae.AlgaeSubsystem;
-import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.coral.CoralSubsystem;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
@@ -48,12 +44,13 @@ public class Superstructure {
 //        pneumaticsControlModule.enableCompressorDigital();
 
         DrivetrainSubsystem.getInstance().resetPose(new Pose2d(0, 0, new Rotation2d(0)));
-        ClimberSubsystem.getInstance().changeAlliance(alliance);
 
         alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     }
 
     public void configureActions() {
+        new Trigger(IO.getButtonValue(Controls.resetGyro)).onTrue(new InstantCommand(() -> DrivetrainSubsystem.getInstance().resetGyro()));
+
         new Trigger(IO.getButtonValue(Controls.PositionL4)).onTrue(new InstantCommand(() -> {AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Processor);}));
         new Trigger(IO.getButtonValue(Controls.PositionL3)).onTrue(new InstantCommand(() -> {AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Stored);}));
         new Trigger(IO.getButtonValue(Controls.PositionL2)).onTrue(CommandFactory.PositionL2());
@@ -120,12 +117,6 @@ public class Superstructure {
         if (!DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(alliance)) {
             DrivetrainSubsystem.getInstance().switchAlliances();
         }
-        if (currentAlliance != alliance) {
-            // Alliance was changed
-            ClimberSubsystem.getInstance().changeAlliance(alliance);
-        }
-
-
     }
 
     public DriverStation.Alliance getAlliance() {

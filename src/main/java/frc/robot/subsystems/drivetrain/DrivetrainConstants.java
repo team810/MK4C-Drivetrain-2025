@@ -71,9 +71,9 @@ public class DrivetrainConstants {
 
     public static final double MAX_ANGULAR_VELOCITY_ACCEPT_VISION_DATA = 2 * Math.PI; // 1 rotation per second
     public static final String LIME_LIGHT_SOURCE = "limelight-source";
-    public static final String LIME_LIGHT_REEF3 = "limelight-reefg";
-    public static final String LIME_LIGHT_REEF4 = "limelight-reef";
-    public static final boolean USING_VISION = true;
+    public static final String LIME_LIGHT_ALGAE = "limelight-algae";
+    public static final String LIME_LIGHT_CORAL = "limelight-coral";
+    public static final boolean USING_VISION = false;
 
     public static final double DRIVETRAIN_LENGTH = Units.inchesToMeters(29.5);
     public static final double DRIVETRAIN_WIDTH = Units.inchesToMeters(29.5);
@@ -253,7 +253,7 @@ public class DrivetrainConstants {
 
         config.voltageCompensation(12);
         config.smartCurrentLimit(20);
-        config.idleMode(SparkBaseConfig.IdleMode.kCoast);
+        config.idleMode(SparkBaseConfig.IdleMode.kBrake);
 
         return config;
     }

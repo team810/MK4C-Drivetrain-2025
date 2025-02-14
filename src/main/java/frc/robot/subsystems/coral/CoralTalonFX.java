@@ -20,9 +20,10 @@ public class CoralTalonFX implements CoralIO {
     private final TalonFX motor;
     private final VoltageOut voltageControl;
 
-    private final StatusSignal<Temperature> temperaturesSignal;
-    private final StatusSignal<Current> currentSignal;
     private final StatusSignal<Voltage> voltageSignal;
+    private final StatusSignal<Temperature> temperaturesSignal;
+    private final StatusSignal<Current> appliedCurrentSignal;
+    private final StatusSignal<Current> supplyCurrentSignal;
 
     private final CANrange sensor;
     private final StatusSignal<Distance> laserDistance;
@@ -34,7 +35,9 @@ public class CoralTalonFX implements CoralIO {
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
-        config.CurrentLimits.SupplyCurrentLimit = 30;
+        config.CurrentLimits.StatorCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = 40;
+        config.CurrentLimits.StatorCurrentLimit = 40;
         config.Voltage.PeakForwardVoltage = 12;
         config.Voltage.PeakReverseVoltage = -12;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -44,7 +47,8 @@ public class CoralTalonFX implements CoralIO {
         voltageControl.EnableFOC = false;
 
         voltageSignal = motor.getMotorVoltage();
-        currentSignal = motor.getStatorCurrent();
+        supplyCurrentSignal = motor.getSupplyCurrent();
+        appliedCurrentSignal = motor.getStatorCurrent();
         temperaturesSignal = motor.getDeviceTemp();
 
         sensor = new CANrange(CoralConstants.LASER_ID, CoralConstants.CAN_BUS);
@@ -60,12 +64,13 @@ public class CoralTalonFX implements CoralIO {
 
     @Override
     public void readPeriodic() {
-        StatusSignal.refreshAll(laserDistance, laserIsDetected, currentSignal,temperaturesSignal,voltageSignal);
+        StatusSignal.refreshAll(laserDistance, laserIsDetected, appliedCurrentSignal, supplyCurrentSignal,temperaturesSignal,voltageSignal);
         Logger.recordOutput("Coral/HasCoral", hasCoral());
         Logger.recordOutput("Coral/RawDistance", laserDistance.getValue());
         Logger.recordOutput("Coral/IsDetected", laserIsDetected.getValue());
 
-        Logger.recordOutput("Coral/MotorCurrent", currentSignal.getValue());
+        Logger.recordOutput("Coral/AppliedCurrent", appliedCurrentSignal.getValue());
+        Logger.recordOutput("Coral/SupplyCurrent", supplyCurrentSignal.getValue());
         Logger.recordOutput("Coral/MotorTemperatures", temperaturesSignal.getValue());
         Logger.recordOutput("Coral/MotorVoltage", voltageSignal.getValue());
     }

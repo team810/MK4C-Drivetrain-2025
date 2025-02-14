@@ -2,7 +2,6 @@ package frc.robot.subsystems.drivetrain;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -110,8 +109,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         if (DrivetrainConstants.USING_VISION) {
             // Change the camera pose relative to robot center (x forward, y left, z up, degrees)
             LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_SOURCE,-0.1905, 0,.4445,-2.6,39,0);
-            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_REEF4,.2921,0,.2852,0,0,0);
-            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_REEF3, .3175,-.1524,.22225,0,0,0);
+            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_CORAL,.2921,0,.2852,0,0,0);
+            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_ALGAE, .3175,-.1524,.22225,0,0,0);
         }
 
         targetPose = new Pose2d();
@@ -136,7 +135,9 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         if (Robot.isReal() && DrivetrainConstants.USING_VISION)
         {
             boolean reject = false;
-            LimelightHelpers.SetRobotOrientation(cam, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
+            if (cam == DrivetrainConstants.LIME_LIGHT_ALGAE) {
+                LimelightHelpers.SetRobotOrientation(cam, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
+            }
             LimelightHelpers.PoseEstimate results = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cam);
 
             if (results != null) {
@@ -169,8 +170,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         backLeft.readPeriodic(moduleObservations[2]);
         backRight.readPeriodic(moduleObservations[3]);
 
-        addVision(DrivetrainConstants.LIME_LIGHT_REEF4);
-        addVision(DrivetrainConstants.LIME_LIGHT_REEF3);
+        addVision(DrivetrainConstants.LIME_LIGHT_ALGAE);
+        addVision(DrivetrainConstants.LIME_LIGHT_CORAL);
         addVision(DrivetrainConstants.LIME_LIGHT_SOURCE);
 
         ArrayList<Observer.SwerveObservation> observations = observer.getObservations();
@@ -317,6 +318,9 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         }else{
             resetPose(new Pose2d(getPose().getX(), getPose().getY(), Rotation2d.fromRadians(-Math.PI)));
         }
+        setImuMode(1);
+        resetLLGyro();
+        setImuMode(2);
     }
 
     public void switchAlliances() {
@@ -414,5 +418,23 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
             instance = new DrivetrainSubsystem();
         }
         return instance;
+    }
+
+    public void resetLLGyro() {
+        // This will be getting called periodically while disabled and when the reset gyro button is pressed
+        LimelightHelpers.SetRobotOrientation(DrivetrainConstants.LIME_LIGHT_SOURCE, odometry.getEstimatedPosition().getRotation().getDegrees(), 0,0,0,0,0);
+        LimelightHelpers.SetRobotOrientation(DrivetrainConstants.LIME_LIGHT_CORAL, odometry.getEstimatedPosition().getRotation().getDegrees(), 0,0,0,0,0);
+        LimelightHelpers.SetRobotOrientation(DrivetrainConstants.LIME_LIGHT_ALGAE, odometry.getEstimatedPosition().getRotation().getDegrees(),0,0,0,0,0);
+    }
+
+    /**
+     * - Use external IMU yaw submitted via SetRobotOrientation() for MT2 localization. The internal IMU is ignored entirely.
+    * 1 - Use external IMU yaw submitted via SetRobotOrientation(), and configure the LL4 internal IMU's fused yaw to match the submitted yaw value.
+     * 2 - Use internal IMU for MT2 localization.
+     */
+    public void setImuMode(int mode) {
+        LimelightHelpers.SetIMUMode(DrivetrainConstants.LIME_LIGHT_SOURCE, mode);
+        LimelightHelpers.SetIMUMode(DrivetrainConstants.LIME_LIGHT_CORAL, mode);
+
     }
 }
