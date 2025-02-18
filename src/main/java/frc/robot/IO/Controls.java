@@ -15,6 +15,7 @@ public enum Controls {
     leftSource,
     rightSource,
 
+
     // Secondary
     Score,
     PositionL4,
@@ -25,6 +26,7 @@ public enum Controls {
     PositionProcessor,
     PositionBarge,
     PositionStore,
+    IntakeAlgae,
 
     ClimbDeployLegs, // Might be a toggle instead
     ClimbRetractLegs,

@@ -1,7 +1,7 @@
 package frc.robot.subsystems.algae;
 
+import com.ctre.phoenix6.controls.VoltageOut;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Voltage;
 
 public interface AlgaeIO {
     public void readPeriodic();
@@ -11,6 +11,7 @@ public interface AlgaeIO {
     public boolean hasAlgae();
     public boolean atPivotSetpoint();
     public void setTargetPivot(Angle angle);
-    public void setDriveVoltage(Voltage voltage);
+    public void setDriveVoltage(VoltageOut voltage);
     public double getCurrentPivot();
+
 }

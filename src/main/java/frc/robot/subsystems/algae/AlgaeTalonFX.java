@@ -3,11 +3,12 @@ package frc.robot.subsystems.algae;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -24,7 +25,7 @@ import static edu.wpi.first.units.Units.*;
 // CCW+ 0 is horizontal to the ground, 90 is straight up
 public class AlgaeTalonFX implements AlgaeIO {
     private final TalonFX pivotMotor;
-    private final MotionMagicVoltage pivotControl;
+    private final PositionVoltage pivotControl;
     private final SingleJointedArmSim pivotSim;
     private TalonFXSimState pivotSimState;
 
@@ -37,7 +38,7 @@ public class AlgaeTalonFX implements AlgaeIO {
     private Angle targetPivot;
 
     private final TalonFX driveMotor;
-    private final VoltageOut driveVoltageControl;
+    private VoltageOut driveVoltageControl;
     private Voltage driveAppliedVoltage;
 
     private final StatusSignal<Voltage> driveVoltageSignal;
@@ -54,16 +55,18 @@ public class AlgaeTalonFX implements AlgaeIO {
         TalonFXConfiguration pivotMotorConfig = new TalonFXConfiguration();
         pivotMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
+        pivotMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
         pivotMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
         pivotMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        pivotMotorConfig.CurrentLimits.StatorCurrentLimit = 40;
+        pivotMotorConfig.CurrentLimits.StatorCurrentLimit = 80;
         pivotMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
         pivotMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine; // Takes the cos of the angle and then calculates the input needed to overcome gravity
-        pivotMotorConfig.Slot0.kG = .22;
-        pivotMotorConfig.Slot0.kV = 7.68;
+        pivotMotorConfig.Slot0.kG = .24;
+        pivotMotorConfig.Slot0.kV = 8;
         pivotMotorConfig.Slot0.kA = .01;
-        pivotMotorConfig.Slot0.kP = 6;
+        pivotMotorConfig.Slot0.kP = 45;
         pivotMotorConfig.Slot0.kI = 0;
         pivotMotorConfig.Slot0.kD = 0;
 
@@ -84,7 +87,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         pivotMotor.getConfigurator().apply(pivotMotorConfig);
         targetPivot = AlgaeConstants.STORED_ANGLE;
 
-        pivotControl = new MotionMagicVoltage(AlgaeConstants.STORED_ANGLE);
+        pivotControl = new PositionVoltage(AlgaeConstants.STORED_ANGLE);
         pivotControl.EnableFOC = true;
         pivotControl.Slot = 0;
         pivotControl.LimitForwardMotion = false;
@@ -105,11 +108,11 @@ public class AlgaeTalonFX implements AlgaeIO {
                 AlgaeConstants.MIN_PIVOT.in(Radians),
                 AlgaeConstants.MAX_PIVOT.in(Radians),
                 true,
-                AlgaeConstants.STORED_ANGLE.in(Radians)
+                AlgaeConstants.STARTING_ANGLE.in(Radians)
         );
-        pivotSim.setState(AlgaeConstants.STORED_ANGLE.in(Radians),0);
+        pivotSim.setState(AlgaeConstants.STARTING_ANGLE.in(Radians),0);
         if (Robot.isReal()) {
-            pivotMotor.setPosition(AlgaeConstants.STORED_ANGLE.in(Rotations));
+            pivotMotor.setPosition(AlgaeConstants.STARTING_ANGLE.in(Rotations));
         }
 
         driveMotor = new TalonFX(AlgaeConstants.DRIVE_MOTOR_ID, AlgaeConstants.CANBUS);
@@ -130,9 +133,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         driveVoltageControl.LimitReverseMotion = false;
         driveVoltageControl.LimitForwardMotion = false;
 
-        driveAppliedVoltage = Units.Volts.of(0);
-
-        driveMotor.setControl(driveVoltageControl);
+        driveAppliedVoltage = Volts.of(0);
 
         driveVoltageSignal = driveMotor.getMotorVoltage();
         driveTemperatureSignal = driveMotor.getDeviceTemp();
@@ -142,6 +143,8 @@ public class AlgaeTalonFX implements AlgaeIO {
         laser = new CANrange(AlgaeConstants.LASER_ID, AlgaeConstants.CANBUS);
         CANrangeConfiguration laserConfig = new CANrangeConfiguration();
         laserConfig.ToFParams.UpdateMode = UpdateModeValue.ShortRange100Hz;
+        laserConfig.FovParams.FOVRangeX = 7;
+        laserConfig.FovParams.FOVRangeY = 7;
         laserConfig.FutureProofConfigs = true;
         laser.getConfigurator().apply(laserConfig);
         distanceSignal = laser.getDistance();
@@ -178,19 +181,21 @@ public class AlgaeTalonFX implements AlgaeIO {
 
         Logger.recordOutput("Algae/Drive/Voltage", driveVoltageSignal.getValue());
         Logger.recordOutput("Algae/Drive/Current", driveAppliedCurrentSignal.getValue());
+        Logger.recordOutput("Algae/Drive/SupplyCurrent", driveSupplyCurrentSignal.getValue());
         Logger.recordOutput("Algae/Drive/Temperature", driveTemperatureSignal.getValue());
         Logger.recordOutput("Algae/Drive/AppliedVoltage", driveAppliedVoltage);
     }
 
     @Override
     public void writePeriodic() {
+        pivotControl.UpdateFreqHz = 1000;
         pivotMotor.setControl(pivotControl); // Apply pivot setpoint
         driveMotor.setControl(driveVoltageControl); // Applied drive voltage
     }
 
     @Override
     public void simulatePeriodic() {
-        pivotSim.setInputVoltage(pivotVoltageSignal.getValue().in(Units.Volts));
+        pivotSim.setInputVoltage(pivotVoltageSignal.getValue().in(Volts));
         pivotSim.update(Robot.defaultPeriodSecs);
 
         pivotSimState = pivotMotor.getSimState();
@@ -224,9 +229,9 @@ public class AlgaeTalonFX implements AlgaeIO {
     }
 
     @Override
-    public void setDriveVoltage(Voltage voltage) {
-        driveAppliedVoltage = voltage;
-        driveVoltageControl.Output = driveAppliedVoltage.in(Units.Volts);
+    public void setDriveVoltage(VoltageOut voltage) {
+        driveAppliedVoltage = Volts.of(voltage.Output);
+        driveVoltageControl = voltage;
     }
 
     @Override

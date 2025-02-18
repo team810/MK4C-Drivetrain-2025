@@ -1,10 +1,10 @@
 package frc.robot.subsystems.algae;
 
+import com.ctre.phoenix6.controls.VoltageOut;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.lib.AdvancedSubsystem;
-import frc.robot.subsystems.coral.CoralSubsystem;
 import org.littletonrobotics.junction.Logger;
 
 import java.util.HashMap;
@@ -38,11 +38,12 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
         driveVoltageMap.put(AlgaeDriveStates.Hold, AlgaeConstants.HOLD_VOLTAGE);
         driveVoltageMap.put(AlgaeDriveStates.Intake, AlgaeConstants.INTAKE_VOLTAGE);
         driveVoltageMap.put(AlgaeDriveStates.Barge, AlgaeConstants.BARGE_VOLTAGE);
+        driveVoltageMap.put(AlgaeDriveStates.Processor, AlgaeConstants.PROCESSOR_VOLTAGE);
 
         currentTargetDriveVoltage = driveVoltageMap.get(driveState);
 
         io = new AlgaeTalonFX();
-        io.setDriveVoltage(currentTargetDriveVoltage);
+        io.setDriveVoltage(new VoltageOut(0));
         io.setTargetPivot(currentTargetPivotAngle);
     }
 
@@ -56,6 +57,15 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
 
     @Override
     public void writePeriodic() {
+        if (AlgaeDriveStates.Off == driveState) {
+            if (hasAlgae()) {
+                setDriveState(AlgaeDriveStates.Hold);
+            }
+        }else if (AlgaeDriveStates.Hold == driveState) {
+            if (!hasAlgae()) {
+                setDriveState(AlgaeDriveStates.Off);
+            }
+        }
         io.writePeriodic();
     }
 
@@ -85,10 +95,18 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
     public void setDriveState(AlgaeDriveStates driveState) {
         this.driveState = driveState;
         currentTargetDriveVoltage = driveVoltageMap.get(this.driveState);
-        io.setDriveVoltage(currentTargetDriveVoltage);
+        VoltageOut out = new VoltageOut(currentTargetDriveVoltage);
+        if (driveState == AlgaeDriveStates.Processor) {
+            out.OverrideBrakeDurNeutral = true;
+        }else{
+            out.OverrideBrakeDurNeutral = false;
+        }
+        io.setDriveVoltage(out);
     }
 
-    public boolean hasAlgae() {return io.hasAlgae();}
+    public boolean hasAlgae() {
+        return io.hasAlgae();
+    }
 
     public static AlgaeSubsystem getInstance() {
         if (instance == null) {

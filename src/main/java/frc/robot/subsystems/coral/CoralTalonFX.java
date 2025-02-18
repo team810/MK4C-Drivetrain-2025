@@ -79,7 +79,8 @@ public class CoralTalonFX implements CoralIO {
     @Override
     public void setVoltage(Voltage voltage) {
         voltageControl.Output = voltage.in(Units.Volts);
-        motor.setControl(voltageControl);
+        // FIXME disabled rn
+//        motor.setControl(voltageControl);
     }
 
     @Override

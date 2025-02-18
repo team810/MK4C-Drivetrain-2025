@@ -5,10 +5,10 @@ import edu.wpi.first.units.measure.Distance;
 import static edu.wpi.first.units.Units.*;
 
 public class ElevatorConstants {
-    public static final int PRIMARY_MOTOR_ID = 10;
-    public static final int SECONDARY_MOTOR_ID = 11;
+    public static final int PRIMARY_MOTOR_ID = 1;
+    public static final int SECONDARY_MOTOR_ID = 2;
 
-    public static final double CONVERSION_FACTOR = 1.0911; // rotations/in
+    public static final double CONVERSION_FACTOR = 1.0911 * 3; // rotations/in
 
     public static final Distance SOURCE_HEIGHT = Inches.of(20);
     public static final Distance L4_HEIGHT = Inches.of(70);

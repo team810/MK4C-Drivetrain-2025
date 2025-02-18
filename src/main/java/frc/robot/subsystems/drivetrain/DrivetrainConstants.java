@@ -15,7 +15,6 @@ import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
-import frc.robot.Robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
@@ -163,7 +162,7 @@ public class DrivetrainConstants {
         voltageConfigs.PeakReverseVoltage = -12;
         config.Voltage = voltageConfigs;
 
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
         Slot0Configs velocityControllerConfig = new Slot0Configs();
         switch (module)
@@ -250,10 +249,9 @@ public class DrivetrainConstants {
         signalConfig.primaryEncoderVelocityAlwaysOn(false);
 
         config.apply(signalConfig);
-
         config.voltageCompensation(12);
         config.smartCurrentLimit(20);
-        config.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        config.idleMode(SparkBaseConfig.IdleMode.kCoast);
 
         return config;
     }

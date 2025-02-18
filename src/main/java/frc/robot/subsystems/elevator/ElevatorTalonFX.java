@@ -6,6 +6,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -47,9 +48,9 @@ public class ElevatorTalonFX implements ElevatorIO{
     private Distance targetHeight;
 
     public ElevatorTalonFX() {
-        leader = new TalonFX(ElevatorConstants.PRIMARY_MOTOR_ID);
+        leader = new TalonFX(ElevatorConstants.PRIMARY_MOTOR_ID, "mech");
         leaderSim = leader.getSimState();
-        follower = new TalonFX(ElevatorConstants.SECONDARY_MOTOR_ID);
+        follower = new TalonFX(ElevatorConstants.SECONDARY_MOTOR_ID, "mech");
         followerSim = follower.getSimState();
 
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -58,20 +59,21 @@ public class ElevatorTalonFX implements ElevatorIO{
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimit = 80;
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         // Voltage config
         config.Voltage.PeakForwardVoltage = 12;
         config.Voltage.PeakReverseVoltage = -12;
         // Motion config
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
         config.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
         if (Robot.isReal()) {
             config.Slot0.kG = .5;
-            config.Slot0.kP = 0;
+            config.Slot0.kP = .1;
             config.Slot0.kI = 0;
             config.Slot0.kD = 0;
 
-            config.MotionMagic.MotionMagicCruiseVelocity = 50;
+            config.MotionMagic.MotionMagicCruiseVelocity = 20;
             config.MotionMagic.MotionMagicAcceleration = 100;
             config.MotionMagic.MotionMagicJerk = 1000;
         }else{
@@ -111,7 +113,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         leader.setPosition(0,3);
 
         targetHeight = ElevatorConstants.STORE_CORAL_HEIGHT;
-        currentHeight = Inches.of(positionSignal.getValue().in(Rotations) / ElevatorConstants.CONVERSION_FACTOR);
+        currentHeight = Inches.of(positionSignal.getValue().in(Rotations) * ElevatorConstants.CONVERSION_FACTOR);
 
         elevatorSim = new ElevatorSim(
                 DCMotor.getKrakenX60Foc(2),
@@ -129,6 +131,7 @@ public class ElevatorTalonFX implements ElevatorIO{
 
     @Override
     public void readPeriodic() {
+
         StatusSignal.refreshAll(positionSignal,
                 velocitySignal,
                 leaderAppliedVoltageSignal,
@@ -142,7 +145,8 @@ public class ElevatorTalonFX implements ElevatorIO{
                 followerTempSignal
         );
 
-        currentHeight = Inches.of(positionSignal.getValue().in(Rotations) / ElevatorConstants.CONVERSION_FACTOR);
+
+        currentHeight = Inches.of(positionSignal.getValue().in(Rotations) * ElevatorConstants.CONVERSION_FACTOR);
 
         Logger.recordOutput("Elevator/CurrentHeightInches", currentHeight.in(Inches));
         Logger.recordOutput("Elevator/TargetHeightInches", targetHeight.in(Inches));
@@ -163,9 +167,10 @@ public class ElevatorTalonFX implements ElevatorIO{
 
     @Override
     public void writePeriodic() {
-        control.Position = targetHeight.in(Inches) * ElevatorConstants.CONVERSION_FACTOR;
-        leader.setControl(control);
-        follower.setControl(followerControl);
+        control.Position = targetHeight.in(Inches) / ElevatorConstants.CONVERSION_FACTOR;
+        // FIXME disabled rn
+//        leader.setControl(control);
+//        follower.setControl(followerControl);
     }
 
     @Override
