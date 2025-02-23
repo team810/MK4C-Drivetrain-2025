@@ -8,9 +8,11 @@ public enum ElevatorState {
     Trough,
 
     Processor,
+    Barge,
     AlgaeRemoveHigh,
     AlgaeRemoveMiddle,
-    Barge,
+    AlgaeFloor,
+    AlgaeCoral,
 
     StoreCoral,
     StoreAlgae

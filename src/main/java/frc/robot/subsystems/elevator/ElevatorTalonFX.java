@@ -65,13 +65,13 @@ public class ElevatorTalonFX implements ElevatorIO{
         config.Voltage.PeakForwardVoltage = 12;
         config.Voltage.PeakReverseVoltage = -12;
         // Motion config
-        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
         config.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
         if (Robot.isReal()) {
             config.Slot0.kG = .93;
-            config.Slot0.kS = .24;
-            config.Slot0.kV = 125;
+            config.Slot0.kS = 0;
+            config.Slot0.kV = .125;
             config.Slot0.kA = 0.01;
             config.Slot0.kP = 1;
             config.Slot0.kI = 0;
@@ -109,7 +109,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         control = new DynamicMotionMagicVoltage(0,20,50,500);
         control.EnableFOC = true;
         control.Slot = 0;
-        control.UseTimesync = false;
+        control.UseTimesync = true;
         control.UpdateFreqHz = 1000;
 
         followerControl = new Follower(leader.getDeviceID(), false);
@@ -148,12 +148,14 @@ public class ElevatorTalonFX implements ElevatorIO{
                 followerTempSignal,
                 followerCurrentSignal,
                 followerAppliedVoltageSignal,
-                followerTempSignal
+                followerTempSignal,
+
+                leader.getMotorVoltage()
         );
 
 
         currentHeight = Inches.of(positionSignal.getValue().in(Rotations) * ElevatorConstants.CONVERSION_FACTOR);
-
+        Logger.recordOutput("Elevator/VoltageTest",leader.getMotorVoltage().getValue());
         Logger.recordOutput("Elevator/CurrentHeightInches", currentHeight.in(Inches));
         Logger.recordOutput("Elevator/TargetHeightInches", targetHeight.in(Rotations));
         Logger.recordOutput("Elevator/AtTargetHeight", atSetpoint());
@@ -161,7 +163,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         Logger.recordOutput("Elevator/TargetRaw", control.Position);
         Logger.recordOutput("Elevator/RawEncoder", positionSignal.getValue().in(Rotations));
 
-        Logger.recordOutput("Elevator/Leader/Voltage", leaderAppliedVoltageSignal.getValue().in(Units.Volts));
+        Logger.recordOutput("Elevator/Leader/Voltage", leaderAppliedVoltageSignal.getValue());
         Logger.recordOutput("Elevator/Leader/AppliedCurrent", leaderAppliedCurrentSignal.getValue().in(Units.Amps));
         Logger.recordOutput("Elevator/Leader/SupplyCurrent", leaderSupplyCurrentSignal.getValue().in(Amps));
         Logger.recordOutput("Elevator/Leader/Temperature",leaderTempSignal.getValue().in(Units.Fahrenheit));
@@ -175,26 +177,11 @@ public class ElevatorTalonFX implements ElevatorIO{
     public void writePeriodic() {
         control.Position = targetHeight.in(Rotations);
 
-        if (positionSignal.getValue().in(Rotations) > control.Position) {
-            // Moving down
-            control.Velocity = 20;
-            control.Acceleration = 50;
-            control.Jerk = 500;
-        }else{
-            // Moving up
-            control.Velocity = 30;
-            control.Acceleration = 600;
-            control.Jerk = 5000;
-        }
-
         if (control.Position == 0 && MathUtil.isNear(0,positionSignal.getValue().in(Rotations), .5)){
             leader.setControl(new VoltageOut(0));
         }else {
             leader.setControl(control);
         }
-        // FIXME disabled rn
-//        leader.setControl(control);
-//        follower.setControl(followerControl);
     }
 
     @Override
@@ -217,6 +204,19 @@ public class ElevatorTalonFX implements ElevatorIO{
     @Override
     public void setElevator(Angle targetHeight) {
         this.targetHeight = targetHeight;
+        control.Position = targetHeight.in(Rotations);
+
+        if (positionSignal.getValue().in(Rotations) > control.Position) {
+            // Moving down
+            control.Velocity = 20;
+            control.Acceleration = 50;
+            control.Jerk = 500;
+        }else{
+            // Moving up
+            control.Velocity = 30;
+            control.Acceleration = 600;
+            control.Jerk = 5000;
+        }
     }
 
     @Override

@@ -57,7 +57,7 @@ public class CoralTalonFX implements CoralIO {
         laserIsDetected = sensor.getIsDetected();
 
         piston = new DoubleSolenoid(
-                PneumaticsModuleType.REVPH,
+                PneumaticsModuleType.CTREPCM,
                 CoralConstants.PISTON_FWD_CHANNEL,
                 CoralConstants.PISTON_REV_CHANNEL
         );

@@ -8,12 +8,12 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.IO.Controls;
 import frc.robot.IO.IO;
-import frc.robot.commands.IntakeAlgae;
-import frc.robot.commands.ScoreAlgae;
-import frc.robot.subsystems.algae.AlgaePivotStates;
+import frc.robot.commands.AlgaeIntakeReef;
+import frc.robot.commands.IntakeAlgaeGround;
 import frc.robot.subsystems.algae.AlgaeSubsystem;
 import frc.robot.subsystems.coral.CoralSubsystem;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
+import frc.robot.subsystems.elevator.ElevatorState;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import org.littletonrobotics.junction.Logger;
 
@@ -37,28 +37,26 @@ public class Superstructure {
         CoralSubsystem.getInstance();
         AlgaeSubsystem.getInstance();
 
-        pneumaticsControlModule = new PneumaticsControlModule(); // Idk which one to use
-
-//        pneumaticsControlModule.enableCompressorAnalog(0, 120);
-//        pneumaticsControlModule.enableCompressorDigital();
-        pneumaticsControlModule.disableCompressor();
+        pneumaticsControlModule = new PneumaticsControlModule();
+        pneumaticsControlModule.enableCompressorDigital();
 
         DrivetrainSubsystem.getInstance().resetPose(new Pose2d(0, 0, new Rotation2d(0)));
-
         alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     }
 
     public void configureActions() {
-//        new Trigger(IO.getButtonValue(Controls.resetGyro)).onTrue(new InstantCommand(() -> DrivetrainSubsystem.getInstance().resetGyro()));
-        new Trigger(IO.getButtonValue(Controls.resetGyro)).whileTrue(new IntakeAlgae());
-        new Trigger(IO.getButtonValue(Controls.PositionProcessor)).onTrue(new InstantCommand(() -> {AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Processor);}));
-        new Trigger(IO.getButtonValue(Controls.Score)).whileTrue(new ScoreAlgae());
-        new Trigger(IO.getButtonValue(Controls.PositionBarge)).onTrue(new InstantCommand(() -> {AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Barge);}));
+        new Trigger(IO.getButtonValue(Controls.resetGyro)).onTrue(new InstantCommand(() -> DrivetrainSubsystem.getInstance().resetGyro()));
 
-//        new Trigger(IO.getButtonValue(Controls.PositionBarge)).onTrue(CommandFactory.PositionBarge());
-//        new Trigger(IO.getButtonValue(Controls.PositionProcessor)).onTrue(CommandFactory.Processor());
-//        new Trigger(IO.getButtonValue(Controls.Source)).onTrue(CommandFactory.Source());
-//        new Trigger(IO.getButtonValue(Controls.PositionStore)).onTrue(CommandFactory.StoreCoral());
+        new Trigger(IO.getButtonValue(Controls.AlgaeIntakeReefHigh)).whileTrue(new AlgaeIntakeReef(AlgaeIntakeReef.TargetHeight.High));
+        new Trigger(IO.getButtonValue(Controls.AlgaeIntakeReefLow)).whileTrue(new AlgaeIntakeReef(AlgaeIntakeReef.TargetHeight.Low));
+
+        new Trigger(IO.getButtonValue(Controls.AlgaeIntakeGround)).whileTrue(new IntakeAlgaeGround(IntakeAlgaeGround.TargetHeight.Ground));
+        new Trigger(IO.getButtonValue(Controls.AlgaeIntakeCoral)).whileTrue(new IntakeAlgaeGround(IntakeAlgaeGround.TargetHeight.Coral));
+
+        new Trigger(IO.getButtonValue(Controls.PositionL4)).onTrue(new InstantCommand(() -> ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L4)));
+        new Trigger(IO.getButtonValue(Controls.PositionL3)).onTrue(new InstantCommand(() -> ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L3)));
+        new Trigger(IO.getButtonValue(Controls.PositionL2)).onTrue(new InstantCommand(() -> ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L2)));
+        new Trigger(IO.getButtonValue(Controls.Store)).onTrue(new InstantCommand(() -> ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.StoreCoral)));
     }
 
     public void periodic() {

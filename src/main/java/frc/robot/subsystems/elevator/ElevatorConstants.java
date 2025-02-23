@@ -23,6 +23,8 @@ public class ElevatorConstants {
     public static final Angle BARGE_HEIGHT = Rotations.of(25);
     public static final Angle STORE_CORAL_HEIGHT = Rotations.of(0);
     public static final Angle STORE_ALGAE_HEIGHT = Rotations.of(0);
+    public static final Angle ALGAE_FLOOR = Rotations.of(0);
+    public static final Angle ALGAE_CORAL = Rotations.of(2);
 
     public static final Distance DRUM_RADIUS = Inches.of(.98);
     public static final Distance ELEVATOR_MAX_HEIGHT = Inches.of(90);

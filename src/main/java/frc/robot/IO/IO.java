@@ -1,7 +1,6 @@
 package frc.robot.IO;
 
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 
 import java.util.HashMap;
@@ -19,7 +18,6 @@ public abstract class IO {
 
     private static final XboxController primary = new XboxController(0);
     private static final XboxController secondary = new XboxController(1);
-    private static final Joystick secondaryJoystick  = new Joystick(1);
 
     private static final HashMap<Controls, DoubleSupplier> controlsJoystick = new HashMap<>();
     private static final HashMap<Controls, BooleanSupplier> controlsButtons = new HashMap<>();
@@ -35,42 +33,31 @@ public abstract class IO {
                 controlsJoystick.put(Controls.driveOmega, primary::getRightX);
                 controlsButtons.put(Controls.resetGyro,primary::getAButton);
 
-
-//                if (Robot.isReal()) {
-//
-//                }else{
-//                    controlsButtons.put(Controls.yawLock,() -> primary.getRawButton(2));
-//                }
-//                controlsButtons.put(Controls.leftAlign,primary::getAButton);
-//                controlsButtons.put(Controls.rightAlign,primary::getBButton);
                 controlsButtons.put(Controls.leftAlign,() -> primary.getLeftTriggerAxis() > .8);
                 controlsButtons.put(Controls.rightAlign, () -> primary.getRightTriggerAxis() > .8);
 
                 controlsButtons.put(Controls.leftSource, primary::getLeftBumperButton);
                 controlsButtons.put(Controls.rightSource, primary::getRightBumperButton);
-
-                
                 break;
         }
 
-        controlsButtons.put(Controls.IntakeAlgae, secondary::getAButton);
-        controlsButtons.put(Controls.PositionProcessor, secondary::getBButton);
-        controlsButtons.put(Controls.PositionBarge, secondary::getXButton);
-        controlsButtons.put(Controls.Score, secondary::getYButton);
-//        controlsButtons.put(Controls.PositionBarge, () -> secondary.getLeftTriggerAxis() > .5);
-//        controlsButtons.put(Controls.PositionProcessor, secondary::getRightBumperButton);
-//        controlsButtons.put(Controls.Source, secondary::getLeftBumperButton);
+        controlsButtons.put(Controls.PositionL4, secondary::getYButton);
+        controlsButtons.put(Controls.PositionL3, secondary::getXButton);
+        controlsButtons.put(Controls.PositionL2, secondary::getBButton);
+        controlsButtons.put(Controls.Store, secondary::getAButton);
 
-        controlsButtons.put(Controls.PositionStore, () -> secondary.getRightTriggerAxis() > .5);
+        controlsButtons.put(Controls.AlgaeIntakeReefHigh, secondary::getLeftBumperButton);
+        controlsButtons.put(Controls.AlgaeIntakeReefLow, secondary::getRightBumperButton);
+        controlsButtons.put(Controls.AlgaeIntakeCoral, () -> secondary.getRightTriggerAxis() > .8);
+        controlsButtons.put(Controls.AlgaeIntakeGround, () -> secondary.getLeftTriggerAxis() > .8);
 
-        switch (secondaryProfile) {
-            case KnollJoystick:
-
-                break;
-            case KnollController:
-
-                break;
-        }
+//        switch (secondaryProfile) {
+//            case KnollJoystick:
+//
+//                break;
+//            case KnollController:
+//                break;
+//        }
     }
 
     public static DoubleSupplier getJoystickValue(Controls control) {

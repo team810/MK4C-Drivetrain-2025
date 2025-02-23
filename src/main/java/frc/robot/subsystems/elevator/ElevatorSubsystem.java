@@ -31,6 +31,8 @@ public class ElevatorSubsystem extends AdvancedSubsystem {
         elevatorHeights.put(ElevatorState.Barge, ElevatorConstants.BARGE_HEIGHT);
         elevatorHeights.put(ElevatorState.StoreCoral, ElevatorConstants.STORE_CORAL_HEIGHT);
         elevatorHeights.put(ElevatorState.StoreAlgae, ElevatorConstants.STORE_ALGAE_HEIGHT);
+        elevatorHeights.put(ElevatorState.AlgaeCoral, ElevatorConstants.ALGAE_CORAL);
+        elevatorHeights.put(ElevatorState.AlgaeFloor, ElevatorConstants.ALGAE_FLOOR);
 
         io = new ElevatorTalonFX();
         setElevatorState(ElevatorState.StoreCoral);

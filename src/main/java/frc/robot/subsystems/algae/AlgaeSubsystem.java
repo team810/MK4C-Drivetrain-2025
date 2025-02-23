@@ -33,6 +33,7 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
         pivotAnglesMap.put(AlgaePivotStates.Processor, AlgaeConstants.PROCESSOR_ANGLE);
         pivotAnglesMap.put(AlgaePivotStates.IntakeGround, AlgaeConstants.GROUND_ANGLE);
         pivotAnglesMap.put(AlgaePivotStates.IntakeReef, AlgaeConstants.REEF_ANGLE);
+        pivotAnglesMap.put(AlgaePivotStates.IntakeCoral, AlgaeConstants.CORAL_ANGLE);
 
         currentTargetPivotAngle = pivotAnglesMap.get(pivotState);
 

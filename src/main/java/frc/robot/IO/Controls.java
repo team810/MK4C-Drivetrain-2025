@@ -15,25 +15,20 @@ public enum Controls {
     leftSource,
     rightSource,
 
+    AlgaeIntakeReefHigh,
+    AlgaeIntakeReefLow,
+    AlgaeIntakeGround,
+    AlgaeIntakeCoral,
+    BargePosition,
+    ProcessorPosition,
+    ScoreAlgae,
 
-    // Secondary
-    Score,
+    ScoreCoral,
+    Source, // Button to intake from the source for algae
     PositionL4,
     PositionL3,
     PositionL2,
     PositionTrough,
-    Source,
-    PositionProcessor,
-    PositionBarge,
-    PositionStore,
-    IntakeAlgae,
 
-    ClimbDeployLegs, // Might be a toggle instead
-    ClimbRetractLegs,
-    ClimbClamp,
-
-
-
-
-
+    Store
 }

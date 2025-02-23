@@ -6,5 +6,6 @@ public enum AlgaePivotStates {
     Processor,
     Barge,
     IntakeGround,
-    IntakeReef
+    IntakeReef,
+    IntakeCoral // Inking off the top of the coral
 }
