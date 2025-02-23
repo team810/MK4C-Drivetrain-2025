@@ -66,14 +66,14 @@ public class AlgaeTalonFX implements AlgaeIO {
         pivotMotorConfig.Slot0.kG = .24;
         pivotMotorConfig.Slot0.kV = 8;
         pivotMotorConfig.Slot0.kA = .01;
-        pivotMotorConfig.Slot0.kP = 45;
+        pivotMotorConfig.Slot0.kP = 40;
         pivotMotorConfig.Slot0.kI = 0;
         pivotMotorConfig.Slot0.kD = 0;
 
         pivotMotorConfig.Feedback.SensorToMechanismRatio = 64; // 64 to 1 gear box
 
-        pivotMotorConfig.Voltage.PeakForwardVoltage = 12;
-        pivotMotorConfig.Voltage.PeakReverseVoltage = -12;
+        pivotMotorConfig.Voltage.PeakForwardVoltage = 8;
+        pivotMotorConfig.Voltage.PeakReverseVoltage = -8;
 
         pivotMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 100;
         pivotMotorConfig.MotionMagic.MotionMagicAcceleration = 400;
@@ -176,7 +176,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         Logger.recordOutput("Algae/Pivot/Voltage", pivotVoltageSignal.getValue());
         Logger.recordOutput("Algae/Pivot/AppliedCurrent", pivotAppliedCurrentSignal.getValue());
 
-        Logger.recordOutput("Algae/Laser/RawValue", distanceSignal.getValue());
+        Logger.recordOutput("Algae/Laser/RawValue", distanceSignal.getValue().in(Inches));
         Logger.recordOutput("Algae/Laser/DetectedAlgae", hasAlgae());
 
         Logger.recordOutput("Algae/Drive/Voltage", driveVoltageSignal.getValue());
@@ -206,11 +206,12 @@ public class AlgaeTalonFX implements AlgaeIO {
 
     @Override
     public boolean hasAlgae() {
-        return MathUtil.isNear(
-                AlgaeConstants.LASER_EXPECTED.in(Units.Meters),
-                distanceSignal.getValue().in(Units.Meters),
-                AlgaeConstants.LASER_TOLERANCE.in(Units.Meters)
-        );
+        return distanceSignal.getValue().in(Inches) < 3.5;
+//        return MathUtil.isNear(
+//                AlgaeConstants.LASER_EXPECTED.in(Units.Meters),
+//                distanceSignal.getValue().in(Units.Meters),
+//                AlgaeConstants.LASER_TOLERANCE.in(Units.Meters)
+//        );
     }
 
     @Override

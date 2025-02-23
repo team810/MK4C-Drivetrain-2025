@@ -1,9 +1,10 @@
 package frc.robot.subsystems.elevator;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
 public interface ElevatorIO {
-    public void setElevator(Distance setpoint);
+    public void setElevator(Angle setpoint);
     public boolean atSetpoint();
     public Distance getHeight();
 

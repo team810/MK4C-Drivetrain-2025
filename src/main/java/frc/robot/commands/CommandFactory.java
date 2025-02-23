@@ -3,6 +3,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.algae.AlgaePivotStates;
 import frc.robot.subsystems.algae.AlgaeSubsystem;
 import frc.robot.subsystems.coral.CoralMotorState;
@@ -12,13 +13,6 @@ import frc.robot.subsystems.elevator.ElevatorState;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 
 public class CommandFactory {
-
-    public static Command getScoreAlgaeCommand() {
-        return new InstantCommand(() -> {});
-    }
-    public static Command getScoreCoralCommand() {
-        return new InstantCommand(() -> {});
-    }
 
     public static Command PositionL4() {
         return new InstantCommand(
@@ -101,8 +95,13 @@ public class CommandFactory {
         );
     }
 
-    public static Command StoreAlgae() {
-        return new InstantCommand();
+    public static Command ScoreCoral() {
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> {
+                    CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
+                    CoralSubsystem.getInstance().setCoralMotorState(CoralMotorState.ReefScore);
+                })
+        );
     }
 
     public static Command Score() {

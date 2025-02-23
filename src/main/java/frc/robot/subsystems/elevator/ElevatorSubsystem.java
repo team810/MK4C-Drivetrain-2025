@@ -1,5 +1,6 @@
 package frc.robot.subsystems.elevator;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.lib.AdvancedSubsystem;
 import org.littletonrobotics.junction.Logger;
@@ -9,9 +10,9 @@ import java.util.HashMap;
 public class ElevatorSubsystem extends AdvancedSubsystem {
     private static ElevatorSubsystem instance;
 
-    private final HashMap<ElevatorState, Distance> elevatorHeights; // Inches
+    private final HashMap<ElevatorState, Angle> elevatorHeights; // Inches
     private ElevatorState currentState;
-    private Distance targetHeight;
+    private Angle targetHeight;
 
     private final ElevatorIO io;
 

@@ -6,7 +6,6 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -15,6 +14,8 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import org.littletonrobotics.junction.Logger;
+
+import static edu.wpi.first.units.Units.Meters;
 
 public class CoralTalonFX implements CoralIO {
     private final TalonFX motor;
@@ -92,11 +93,7 @@ public class CoralTalonFX implements CoralIO {
     public boolean hasCoral() {
         if (laserIsDetected.getValue())
             return false;
-        return MathUtil.isNear(
-                CoralConstants.LASER_EXPECTED,
-                laserDistance.getValue().in(Units.Meters),
-                CoralConstants.LASER_TOLERANCE
-        );
+        return laserDistance.getValue().in(Meters) < .8;
     }
 
     @Override

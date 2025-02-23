@@ -2,6 +2,7 @@ package frc.robot.subsystems.drivetrain;
 
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.spark.config.SignalsConfig;
@@ -149,6 +150,7 @@ public class DrivetrainConstants {
 
     public static TalonFXConfiguration getDriveConfig(SwerveModuleID module) {
         TalonFXConfiguration config = new TalonFXConfiguration();
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         CurrentLimitsConfigs currentLimitConfig = new CurrentLimitsConfigs();
         currentLimitConfig.StatorCurrentLimitEnable = true;
@@ -162,7 +164,7 @@ public class DrivetrainConstants {
         voltageConfigs.PeakReverseVoltage = -12;
         config.Voltage = voltageConfigs;
 
-        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         Slot0Configs velocityControllerConfig = new Slot0Configs();
         switch (module)
@@ -251,7 +253,7 @@ public class DrivetrainConstants {
         config.apply(signalConfig);
         config.voltageCompensation(12);
         config.smartCurrentLimit(20);
-        config.idleMode(SparkBaseConfig.IdleMode.kCoast);
+        config.idleMode(SparkBaseConfig.IdleMode.kBrake);
 
         return config;
     }

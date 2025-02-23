@@ -76,7 +76,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         backRight = new KrakenNeoModule(SwerveModuleID.BackRight);
 
         gyro = new Pigeon2(DrivetrainConstants.GYRO_ID, DrivetrainConstants.CAN_BUS);
-        gyro.getConfigurator().apply(DrivetrainConstants.getGyroConfig());
+//        gyro.getConfigurator().apply(DrivetrainConstants.getGyroConfig());
+
         gyroSimState = gyro.getSimState();
         gyro.reset();
 

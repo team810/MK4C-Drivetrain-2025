@@ -31,6 +31,8 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
         pivotAnglesMap.put(AlgaePivotStates.Hold, AlgaeConstants.HOLD_ANGLE);
         pivotAnglesMap.put(AlgaePivotStates.Barge, AlgaeConstants.BARGE_ANGLE);
         pivotAnglesMap.put(AlgaePivotStates.Processor, AlgaeConstants.PROCESSOR_ANGLE);
+        pivotAnglesMap.put(AlgaePivotStates.IntakeGround, AlgaeConstants.GROUND_ANGLE);
+        pivotAnglesMap.put(AlgaePivotStates.IntakeReef, AlgaeConstants.REEF_ANGLE);
 
         currentTargetPivotAngle = pivotAnglesMap.get(pivotState);
 
@@ -60,10 +62,12 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
         if (AlgaeDriveStates.Off == driveState) {
             if (hasAlgae()) {
                 setDriveState(AlgaeDriveStates.Hold);
+                setPivotState(AlgaePivotStates.Hold);
             }
         }else if (AlgaeDriveStates.Hold == driveState) {
             if (!hasAlgae()) {
                 setDriveState(AlgaeDriveStates.Off);
+                setPivotState(AlgaePivotStates.Stored);
             }
         }
         io.writePeriodic();

@@ -2,8 +2,9 @@ package frc.robot.subsystems.elevator;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -27,7 +28,7 @@ public class ElevatorTalonFX implements ElevatorIO{
     private final TalonFX follower;
     private TalonFXSimState followerSim;
 
-    private final MotionMagicVoltage control;
+    private final DynamicMotionMagicVoltage control;
     private final Follower followerControl;
 
     private final StatusSignal<Angle> positionSignal;
@@ -45,7 +46,7 @@ public class ElevatorTalonFX implements ElevatorIO{
     private final ElevatorSim elevatorSim;
 
     private Distance currentHeight;
-    private Distance targetHeight;
+    private Angle targetHeight;
 
     public ElevatorTalonFX() {
         leader = new TalonFX(ElevatorConstants.PRIMARY_MOTOR_ID, "mech");
@@ -68,8 +69,11 @@ public class ElevatorTalonFX implements ElevatorIO{
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
         config.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
         if (Robot.isReal()) {
-            config.Slot0.kG = .5;
-            config.Slot0.kP = .1;
+            config.Slot0.kG = .93;
+            config.Slot0.kS = .24;
+            config.Slot0.kV = 125;
+            config.Slot0.kA = 0.01;
+            config.Slot0.kP = 1;
             config.Slot0.kI = 0;
             config.Slot0.kD = 0;
 
@@ -102,15 +106,17 @@ public class ElevatorTalonFX implements ElevatorIO{
         followerCurrentSignal = follower.getSupplyCurrent();
         followerAppliedVoltageSignal = follower.getMotorVoltage();
 
-        control = new MotionMagicVoltage(0);
+        control = new DynamicMotionMagicVoltage(0,20,50,500);
         control.EnableFOC = true;
         control.Slot = 0;
         control.UseTimesync = false;
+        control.UpdateFreqHz = 1000;
 
         followerControl = new Follower(leader.getDeviceID(), false);
         followerControl.UpdateFreqHz = 1000;
+        follower.setControl(followerControl);
 
-        leader.setPosition(0,3);
+        leader.setPosition(0);
 
         targetHeight = ElevatorConstants.STORE_CORAL_HEIGHT;
         currentHeight = Inches.of(positionSignal.getValue().in(Rotations) * ElevatorConstants.CONVERSION_FACTOR);
@@ -149,7 +155,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         currentHeight = Inches.of(positionSignal.getValue().in(Rotations) * ElevatorConstants.CONVERSION_FACTOR);
 
         Logger.recordOutput("Elevator/CurrentHeightInches", currentHeight.in(Inches));
-        Logger.recordOutput("Elevator/TargetHeightInches", targetHeight.in(Inches));
+        Logger.recordOutput("Elevator/TargetHeightInches", targetHeight.in(Rotations));
         Logger.recordOutput("Elevator/AtTargetHeight", atSetpoint());
 
         Logger.recordOutput("Elevator/TargetRaw", control.Position);
@@ -167,7 +173,25 @@ public class ElevatorTalonFX implements ElevatorIO{
 
     @Override
     public void writePeriodic() {
-        control.Position = targetHeight.in(Inches) / ElevatorConstants.CONVERSION_FACTOR;
+        control.Position = targetHeight.in(Rotations);
+
+        if (positionSignal.getValue().in(Rotations) > control.Position) {
+            // Moving down
+            control.Velocity = 20;
+            control.Acceleration = 50;
+            control.Jerk = 500;
+        }else{
+            // Moving up
+            control.Velocity = 30;
+            control.Acceleration = 600;
+            control.Jerk = 5000;
+        }
+
+        if (control.Position == 0 && MathUtil.isNear(0,positionSignal.getValue().in(Rotations), .5)){
+            leader.setControl(new VoltageOut(0));
+        }else {
+            leader.setControl(control);
+        }
         // FIXME disabled rn
 //        leader.setControl(control);
 //        follower.setControl(followerControl);
@@ -191,7 +215,7 @@ public class ElevatorTalonFX implements ElevatorIO{
     }
 
     @Override
-    public void setElevator(Distance targetHeight) {
+    public void setElevator(Angle targetHeight) {
         this.targetHeight = targetHeight;
     }
 
@@ -202,6 +226,6 @@ public class ElevatorTalonFX implements ElevatorIO{
 
     @Override
     public boolean atSetpoint() {
-        return MathUtil.isNear(targetHeight.in(Inches),currentHeight.in(Inches), .125);
+        return MathUtil.isNear(targetHeight.in(Rotations),positionSignal.getValue().in(Rotations), .125);
     }
 }

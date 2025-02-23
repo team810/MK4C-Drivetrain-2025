@@ -13,13 +13,18 @@ public class IntakeAlgae extends Command {
     @Override
     public void initialize() {
         AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Intake);
-        AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Processor);
+        AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.IntakeGround);
     }
 
     @Override
     public void end(boolean interrupted) {
-        AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Hold);
-        AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Hold);
+        if (AlgaeSubsystem.getInstance().hasAlgae()) {
+            AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Hold);
+            AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Hold);
+        }else{
+            AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Off);
+            AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Stored);
+        }
     }
 
     @Override

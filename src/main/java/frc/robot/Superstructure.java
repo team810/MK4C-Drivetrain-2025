@@ -49,9 +49,8 @@ public class Superstructure {
     }
 
     public void configureActions() {
-        new Trigger(IO.getButtonValue(Controls.resetGyro)).onTrue(new InstantCommand(() -> DrivetrainSubsystem.getInstance().resetGyro()));
-
-        new Trigger(IO.getButtonValue(Controls.IntakeAlgae)).whileTrue(new IntakeAlgae());
+//        new Trigger(IO.getButtonValue(Controls.resetGyro)).onTrue(new InstantCommand(() -> DrivetrainSubsystem.getInstance().resetGyro()));
+        new Trigger(IO.getButtonValue(Controls.resetGyro)).whileTrue(new IntakeAlgae());
         new Trigger(IO.getButtonValue(Controls.PositionProcessor)).onTrue(new InstantCommand(() -> {AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Processor);}));
         new Trigger(IO.getButtonValue(Controls.Score)).whileTrue(new ScoreAlgae());
         new Trigger(IO.getButtonValue(Controls.PositionBarge)).onTrue(new InstantCommand(() -> {AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Barge);}));

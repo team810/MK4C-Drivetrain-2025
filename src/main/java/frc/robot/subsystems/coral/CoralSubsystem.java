@@ -39,8 +39,8 @@ public class CoralSubsystem extends AdvancedSubsystem {
         pistonStateMap.put(CoralPistonState.Source, DoubleSolenoid.Value.kForward);
         pistonStateMap.put(CoralPistonState.Trough, DoubleSolenoid.Value.kReverse);
 
-//        io = new CoralTalonFX();
-        io = new PlaceHolderCoral();
+        io = new CoralTalonFX();
+//        io = new PlaceHolderCoral();
         io.setPistonState(DoubleSolenoid.Value.kReverse);
     }
 
