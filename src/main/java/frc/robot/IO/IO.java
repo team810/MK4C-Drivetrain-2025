@@ -44,20 +44,16 @@ public abstract class IO {
         controlsButtons.put(Controls.PositionL4, secondary::getYButton);
         controlsButtons.put(Controls.PositionL3, secondary::getXButton);
         controlsButtons.put(Controls.PositionL2, secondary::getBButton);
+        controlsButtons.put(Controls.PositionTrough, () -> secondary.getPOV() == 270);
         controlsButtons.put(Controls.Store, secondary::getAButton);
+        controlsButtons.put(Controls.ScoreCoral, () -> secondary.getPOV() == 90);
 
         controlsButtons.put(Controls.AlgaeIntakeReefHigh, secondary::getLeftBumperButton);
         controlsButtons.put(Controls.AlgaeIntakeReefLow, secondary::getRightBumperButton);
         controlsButtons.put(Controls.AlgaeIntakeCoral, () -> secondary.getRightTriggerAxis() > .8);
         controlsButtons.put(Controls.AlgaeIntakeGround, () -> secondary.getLeftTriggerAxis() > .8);
-
-//        switch (secondaryProfile) {
-//            case KnollJoystick:
-//
-//                break;
-//            case KnollController:
-//                break;
-//        }
+        controlsButtons.put(Controls.Source, () -> secondary.getPOV() == 0);
+        controlsButtons.put(Controls.ScoreAlgae, () -> secondary.getPOV() == 180);
     }
 
     public static DoubleSupplier getJoystickValue(Controls control) {

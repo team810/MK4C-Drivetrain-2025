@@ -10,7 +10,9 @@ import frc.robot.IO.Controls;
 import frc.robot.IO.IO;
 import frc.robot.commands.AlgaeIntakeReef;
 import frc.robot.commands.IntakeAlgaeGround;
+import frc.robot.commands.SourceIntake;
 import frc.robot.subsystems.algae.AlgaeSubsystem;
+import frc.robot.subsystems.coral.CoralPistonState;
 import frc.robot.subsystems.coral.CoralSubsystem;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
 import frc.robot.subsystems.elevator.ElevatorState;
@@ -53,10 +55,27 @@ public class Superstructure {
         new Trigger(IO.getButtonValue(Controls.AlgaeIntakeGround)).whileTrue(new IntakeAlgaeGround(IntakeAlgaeGround.TargetHeight.Ground));
         new Trigger(IO.getButtonValue(Controls.AlgaeIntakeCoral)).whileTrue(new IntakeAlgaeGround(IntakeAlgaeGround.TargetHeight.Coral));
 
-        new Trigger(IO.getButtonValue(Controls.PositionL4)).onTrue(new InstantCommand(() -> ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L4)));
-        new Trigger(IO.getButtonValue(Controls.PositionL3)).onTrue(new InstantCommand(() -> ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L3)));
-        new Trigger(IO.getButtonValue(Controls.PositionL2)).onTrue(new InstantCommand(() -> ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L2)));
-        new Trigger(IO.getButtonValue(Controls.Store)).onTrue(new InstantCommand(() -> ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.StoreCoral)));
+        new Trigger(IO.getButtonValue(Controls.PositionL4)).onTrue(new InstantCommand(() -> {
+            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L4);
+            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
+        }));
+        new Trigger(IO.getButtonValue(Controls.PositionL3)).onTrue(new InstantCommand(() -> {
+            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L3);
+            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
+        }));
+        new Trigger(IO.getButtonValue(Controls.PositionL2)).onTrue(new InstantCommand(() -> {
+            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L2);
+            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
+        }));
+        new Trigger(IO.getButtonValue(Controls.PositionTrough)).onTrue(new InstantCommand(() -> {
+            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.Trough);
+            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
+        }));
+        new Trigger(IO.getButtonValue(Controls.Store)).onTrue(new InstantCommand(() -> {
+            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.StoreCoral);
+            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
+        }));
+        new Trigger(IO.getButtonValue(Controls.Source)).whileTrue(new SourceIntake());
     }
 
     public void periodic() {
