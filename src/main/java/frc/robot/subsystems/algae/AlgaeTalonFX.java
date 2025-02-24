@@ -63,10 +63,10 @@ public class AlgaeTalonFX implements AlgaeIO {
         pivotMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
         pivotMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine; // Takes the cos of the angle and then calculates the input needed to overcome gravity
-        pivotMotorConfig.Slot0.kG = 0;
+        pivotMotorConfig.Slot0.kG = .2;
         pivotMotorConfig.Slot0.kV = .125;
         pivotMotorConfig.Slot0.kA = .01;
-        pivotMotorConfig.Slot0.kP = 20;
+        pivotMotorConfig.Slot0.kP = 35;
         pivotMotorConfig.Slot0.kI = .1;
         pivotMotorConfig.Slot0.kD = 0;
 
@@ -189,7 +189,7 @@ public class AlgaeTalonFX implements AlgaeIO {
     @Override
     public void writePeriodic() {
         pivotControl.UpdateFreqHz = 1000;
-//        pivotMotor.setControl(pivotControl); // Apply pivot setpoint
+        pivotMotor.setControl(pivotControl); // Apply pivot setpoint
         driveMotor.setControl(driveVoltageControl); // Applied drive voltage
     }
 

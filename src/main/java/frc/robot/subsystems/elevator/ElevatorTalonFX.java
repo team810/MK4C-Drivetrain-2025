@@ -213,9 +213,9 @@ public class ElevatorTalonFX implements ElevatorIO{
             control.Jerk = 500;
         }else{
             // Moving up
-            control.Velocity = 30;
-            control.Acceleration = 600;
-            control.Jerk = 5000;
+            control.Velocity = 35;
+            control.Acceleration = 700;
+            control.Jerk = 6000;
         }
     }
 
