@@ -75,7 +75,7 @@ public class DrivetrainConstants {
     public static final String LIME_LIGHT_CORAL = "limelight-coral";
     public static final boolean USING_VISION = false;
 
-    public static final double DRIVETRAIN_LENGTH = Units.inchesToMeters(29.5);
+    public static final double DRIVETRAIN_LENGTH = Units.inchesToMeters(29.25);
     public static final double DRIVETRAIN_WIDTH = Units.inchesToMeters(29.5);
 
     public static SwerveDriveKinematics getKinematics() {

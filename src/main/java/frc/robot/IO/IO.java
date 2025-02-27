@@ -54,6 +54,8 @@ public abstract class IO {
         controlsButtons.put(Controls.AlgaeIntakeGround, () -> secondary.getLeftTriggerAxis() > .8);
         controlsButtons.put(Controls.Source, () -> secondary.getPOV() == 0);
         controlsButtons.put(Controls.ScoreAlgae, () -> secondary.getPOV() == 180);
+
+
     }
 
     public static DoubleSupplier getJoystickValue(Controls control) {

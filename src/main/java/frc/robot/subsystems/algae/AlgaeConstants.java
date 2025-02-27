@@ -14,7 +14,7 @@ public class AlgaeConstants {
     public static final int LASER_ID = 6;
 
     public static final Angle STORED_ANGLE = Degrees.of(50);
-    public static final Angle BARGE_ANGLE = Degrees.of(55);
+    public static final Angle BARGE_ANGLE = Degrees.of(20);
     public static final Angle HOLD_ANGLE = Degrees.of(40);
     public static final Angle PROCESSOR_ANGLE = Degrees.of(0);
     public static final Angle GROUND_ANGLE = Degrees.of(-33.12);

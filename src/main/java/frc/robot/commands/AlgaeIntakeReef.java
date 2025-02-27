@@ -33,7 +33,6 @@ public class AlgaeIntakeReef extends Command {
     @Override
     public void execute() {
         if (AlgaeSubsystem.getInstance().hasAlgae()) {
-            AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Hold);
             AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Hold);
         }
     }

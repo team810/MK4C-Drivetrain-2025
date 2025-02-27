@@ -27,6 +27,15 @@ public class IntakeAlgaeGround extends Command {
             AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.IntakeCoral);
         }
         AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Intake);
+
+    }
+
+    @Override
+    public void execute() {
+        if (AlgaeSubsystem.getInstance().hasAlgae())
+        {
+            AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Hold);
+        }
     }
 
     @Override
@@ -44,6 +53,6 @@ public class IntakeAlgaeGround extends Command {
 
     @Override
     public boolean isFinished() {
-        return AlgaeSubsystem.getInstance().hasAlgae();
+        return false;
     }
 }

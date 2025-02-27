@@ -2,6 +2,7 @@ package frc.robot.subsystems.elevator;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DynamicMotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -33,6 +34,7 @@ public class ElevatorTalonFX implements ElevatorIO{
 
     private final StatusSignal<Angle> positionSignal;
     private final StatusSignal<AngularVelocity> velocitySignal;
+    private final StatusSignal<AngularAcceleration> accelerationSignal;
 
     private final StatusSignal<Temperature> leaderTempSignal;
     private final StatusSignal<Voltage> leaderAppliedVoltageSignal;
@@ -60,7 +62,12 @@ public class ElevatorTalonFX implements ElevatorIO{
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimit = 80;
-        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        if (Robot.isReal())
+        {
+            config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        }else{
+            config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        }
         // Voltage config
         config.Voltage.PeakForwardVoltage = 12;
         config.Voltage.PeakReverseVoltage = -12;
@@ -87,8 +94,8 @@ public class ElevatorTalonFX implements ElevatorIO{
             config.Slot0.kD = 0;
 
             config.MotionMagic.MotionMagicCruiseVelocity = 100;
-            config.MotionMagic.MotionMagicAcceleration = 250;
-            config.MotionMagic.MotionMagicJerk = 1000;
+            config.MotionMagic.MotionMagicAcceleration = 500;
+            config.MotionMagic.MotionMagicJerk = 4000;
         }
 
         leader.getConfigurator().apply(config);
@@ -96,6 +103,7 @@ public class ElevatorTalonFX implements ElevatorIO{
 
         positionSignal = leader.getPosition();
         velocitySignal = leader.getVelocity();
+        accelerationSignal = leader.getAcceleration();
 
         leaderTempSignal = leader.getDeviceTemp();
         leaderAppliedVoltageSignal = leader.getMotorVoltage();
@@ -159,6 +167,8 @@ public class ElevatorTalonFX implements ElevatorIO{
         Logger.recordOutput("Elevator/CurrentHeightInches", currentHeight.in(Inches));
         Logger.recordOutput("Elevator/TargetHeightInches", targetHeight.in(Rotations));
         Logger.recordOutput("Elevator/AtTargetHeight", atSetpoint());
+        Logger.recordOutput("Elevator/Velocity", velocitySignal.getValue());
+        Logger.recordOutput("Elevator/Acceleration", accelerationSignal.getValue().in(RotationsPerSecondPerSecond));
 
         Logger.recordOutput("Elevator/TargetRaw", control.Position);
         Logger.recordOutput("Elevator/RawEncoder", positionSignal.getValue().in(Rotations));
@@ -177,7 +187,7 @@ public class ElevatorTalonFX implements ElevatorIO{
     public void writePeriodic() {
         control.Position = targetHeight.in(Rotations);
 
-        if (control.Position == 0 && MathUtil.isNear(0,positionSignal.getValue().in(Rotations), .5)){
+        if (control.Position == 0 && MathUtil.isNear(0,positionSignal.getValue().in(Rotations), .6)){
             leader.setControl(new VoltageOut(0));
         }else {
             leader.setControl(control);

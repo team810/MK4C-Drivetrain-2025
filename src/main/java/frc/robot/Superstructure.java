@@ -4,14 +4,17 @@ import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.IO.Controls;
 import frc.robot.IO.IO;
 import frc.robot.commands.AlgaeIntakeReef;
 import frc.robot.commands.IntakeAlgaeGround;
 import frc.robot.commands.SourceIntake;
+import frc.robot.subsystems.algae.AlgaeDriveStates;
+import frc.robot.subsystems.algae.AlgaePivotStates;
 import frc.robot.subsystems.algae.AlgaeSubsystem;
+import frc.robot.subsystems.coral.CoralMotorState;
 import frc.robot.subsystems.coral.CoralPistonState;
 import frc.robot.subsystems.coral.CoralSubsystem;
 import frc.robot.subsystems.drivetrain.DrivetrainSubsystem;
@@ -19,6 +22,7 @@ import frc.robot.subsystems.elevator.ElevatorState;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import org.littletonrobotics.junction.Logger;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
 public class Superstructure {
@@ -55,27 +59,59 @@ public class Superstructure {
         new Trigger(IO.getButtonValue(Controls.AlgaeIntakeGround)).whileTrue(new IntakeAlgaeGround(IntakeAlgaeGround.TargetHeight.Ground));
         new Trigger(IO.getButtonValue(Controls.AlgaeIntakeCoral)).whileTrue(new IntakeAlgaeGround(IntakeAlgaeGround.TargetHeight.Coral));
 
-        new Trigger(IO.getButtonValue(Controls.PositionL4)).onTrue(new InstantCommand(() -> {
-            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L4);
-            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
-        }));
-        new Trigger(IO.getButtonValue(Controls.PositionL3)).onTrue(new InstantCommand(() -> {
-            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L3);
-            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
-        }));
-        new Trigger(IO.getButtonValue(Controls.PositionL2)).onTrue(new InstantCommand(() -> {
-            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L2);
-            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
-        }));
+        new Trigger(IO.getButtonValue(Controls.PositionL4)).onTrue(new SequentialCommandGroup(
+                new InstantCommand(() -> {
+                    ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L4);
+                    CoralSubsystem.getInstance().setCoralMotorState(CoralMotorState.Hold);
+                }),
+                new WaitUntilCommand(() -> ElevatorSubsystem.getInstance().getCurrentHeight().in(Inches) > 5),
+                new InstantCommand(() -> CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef))
+        ));
+        new Trigger(IO.getButtonValue(Controls.PositionL3)).onTrue(
+                new SequentialCommandGroup(
+                        new InstantCommand(() -> {
+                            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L3);
+                            CoralSubsystem.getInstance().setCoralMotorState(CoralMotorState.Hold);
+                        }),
+                        new WaitUntilCommand(() -> ElevatorSubsystem.getInstance().getCurrentHeight().in(Inches) > 5),
+                        new InstantCommand(() -> CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef))
+                )
+        );
+        new Trigger(IO.getButtonValue(Controls.PositionL2)).onTrue(
+                new SequentialCommandGroup(
+                        new InstantCommand(() -> {
+                            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.L2);
+                            CoralSubsystem.getInstance().setCoralMotorState(CoralMotorState.Hold);
+                        }),
+                        new WaitUntilCommand(() -> ElevatorSubsystem.getInstance().getCurrentHeight().in(Inches) > 5),
+                        new InstantCommand(() -> CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef))
+                ));
         new Trigger(IO.getButtonValue(Controls.PositionTrough)).onTrue(new InstantCommand(() -> {
             ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.Trough);
             CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
         }));
         new Trigger(IO.getButtonValue(Controls.Store)).onTrue(new InstantCommand(() -> {
             ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.StoreCoral);
-            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Reef);
+            CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Source);
+            AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Stored);
+            CoralSubsystem.getInstance().setCoralMotorState(CoralMotorState.Off);
+
         }));
         new Trigger(IO.getButtonValue(Controls.Source)).whileTrue(new SourceIntake());
+
+        new Trigger(IO.getButtonValue(Controls.ScoreAlgae)).whileTrue(
+                new StartEndCommand(
+                        () -> {AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Barge);},
+                        () -> {AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Off);}
+                )
+        );
+
+        new Trigger(IO.getButtonValue(Controls.ScoreCoral)).whileTrue(
+                new StartEndCommand(
+                        () -> {CoralSubsystem.getInstance().setCoralMotorState(CoralMotorState.ReefScore);},
+                        () -> {CoralSubsystem.getInstance().setCoralMotorState(CoralMotorState.Off);}
+                )
+        );
     }
 
     public void periodic() {
@@ -93,8 +129,8 @@ public class Superstructure {
         Logger.recordOutput("SuperStructure/Alliance", alliance);
         Logger.recordOutput("SuperStructure/Pressure", pneumaticsControlModule.getPressure(0));
 
-        Pose3d secondStage = new Pose3d(0,0,ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) / 3, new Rotation3d());
-        Pose3d insideStage = new Pose3d(0,0, ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) / 2, new Rotation3d());
+        Pose3d secondStage = new Pose3d(0,0,ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) / 2, new Rotation3d());
+        Pose3d insideStage = new Pose3d(0,0, ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) / 3, new Rotation3d());
 
         Pose3d carriage = new Pose3d(0, .1, (ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters)) + .18,new Rotation3d());
         Pose3d algae = new Pose3d(0, .2,carriage.getZ() + .17,new Rotation3d(Math.toRadians(-63) + AlgaeSubsystem.getInstance().currentPivotAngle(),0,0));

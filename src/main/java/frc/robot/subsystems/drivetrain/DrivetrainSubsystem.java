@@ -109,9 +109,9 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
 
         if (DrivetrainConstants.USING_VISION) {
             // Change the camera pose relative to robot center (x forward, y left, z up, degrees)
-            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_SOURCE,-0.1905, 0,.4445,-2.6,39,0);
-            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_CORAL,.2921,0,.2852,0,0,0);
-            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_ALGAE, .3175,-.1524,.22225,0,0,0);
+            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_CORAL,.276, .0127,.2667,0,0,0);
+            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_SOURCE,-.2476,.107,.9779,0,50,0);
+//            LimelightHelpers.setCameraPose_RobotSpace(DrivetrainConstants.LIME_LIGHT_ALGAE, .3175,-.1524,.22225,0,0,0);
         }
 
         targetPose = new Pose2d();
@@ -156,7 +156,6 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
                     if(!reject)
                     {
                         visionPose = results.pose;
-
                         odometry.addVisionMeasurement(visionPose, results.timestampSeconds);
                     }
                 }
@@ -171,7 +170,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         backLeft.readPeriodic(moduleObservations[2]);
         backRight.readPeriodic(moduleObservations[3]);
 
-        addVision(DrivetrainConstants.LIME_LIGHT_ALGAE);
+//        addVision(DrivetrainConstants.LIME_LIGHT_ALGAE);
         addVision(DrivetrainConstants.LIME_LIGHT_CORAL);
         addVision(DrivetrainConstants.LIME_LIGHT_SOURCE);
 

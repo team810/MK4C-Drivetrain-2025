@@ -1,10 +1,10 @@
 package frc.robot.subsystems.coral;
 
 public enum CoralPistonState {
-    Store,
-    Source,
-    Reef,
-    Trough,
-    Hold
+    Store, // Up
+    Source, // Up
+    Reef, // Down
+    Trough, // Down
+    Hold // Up
 
 }

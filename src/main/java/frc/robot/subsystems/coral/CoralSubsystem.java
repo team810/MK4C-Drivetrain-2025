@@ -31,17 +31,17 @@ public class CoralSubsystem extends AdvancedSubsystem {
         motorStateMap.put(CoralMotorState.Source, CoralConstants.SOURCE_VOLTAGE);
         motorStateMap.put(CoralMotorState.ReefScore, CoralConstants.REEF_SCORE_VOLTAGE);
         motorStateMap.put(CoralMotorState.TroughScore, CoralConstants.TROUGH_SCORE_VOLTAGE);
+        motorStateMap.put(CoralMotorState.Hold, CoralConstants.HOLD_SCORE_VOLTAGE);
 
         pistonStateMap = new HashMap<>();
         pistonStateMap.put(CoralPistonState.Store, DoubleSolenoid.Value.kForward);
-        pistonStateMap.put(CoralPistonState.Hold, DoubleSolenoid.Value.kReverse);
-        pistonStateMap.put(CoralPistonState.Reef, DoubleSolenoid.Value.kReverse);
+        pistonStateMap.put(CoralPistonState.Hold, DoubleSolenoid.Value.kForward);
         pistonStateMap.put(CoralPistonState.Source, DoubleSolenoid.Value.kForward);
+        pistonStateMap.put(CoralPistonState.Reef, DoubleSolenoid.Value.kReverse);
         pistonStateMap.put(CoralPistonState.Trough, DoubleSolenoid.Value.kReverse);
 
         io = new CoralTalonFX();
-//        io = new PlaceHolderCoral();
-        io.setPistonState(DoubleSolenoid.Value.kReverse);
+        currentPistonTarget = io.getPistonState();
     }
 
     @Override

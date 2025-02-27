@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.algae.AlgaeDriveStates;
 import frc.robot.subsystems.algae.AlgaePivotStates;
 import frc.robot.subsystems.algae.AlgaeSubsystem;
 import frc.robot.subsystems.coral.CoralMotorState;
@@ -17,10 +16,7 @@ public class SourceIntake extends Command {
     public void initialize() {
         CoralSubsystem.getInstance().setCoralPistonState(CoralPistonState.Source);
         CoralSubsystem.getInstance().setCoralMotorState(CoralMotorState.Source);
-
         ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.Source);
-        AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Off);
-        AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Stored);
     }
     
     @Override

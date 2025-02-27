@@ -55,8 +55,11 @@ public class KrakenNeoModule implements SwerveModuleIO{
     {
         this.id = id;
         this.idString = this.id.toString();
-
-        driveMotor = new TalonFX(DrivetrainConstants.getDriveID(id),DrivetrainConstants.CAN_BUS);
+        if (Robot.isReal()) {
+            driveMotor = new TalonFX(DrivetrainConstants.getDriveID(id),DrivetrainConstants.CAN_BUS);
+        }else{
+            driveMotor = new TalonFX(DrivetrainConstants.getDriveID(id) + 10,DrivetrainConstants.CAN_BUS);
+        }
         driveMotor.getConfigurator().apply(DrivetrainConstants.getDriveConfig(id));
         driveSimState = driveMotor.getSimState();
 
@@ -128,19 +131,19 @@ public class KrakenNeoModule implements SwerveModuleIO{
 //        iTime = RobotController.getFPGATime();
 
         // This code was taking up to .019 milliseconds to run
-//        driveMotorControl = new VelocityVoltage(velocity);
-//        driveMotorControl.UpdateFreqHz = 1000;
-//        driveMotorControl.Acceleration = acceleration;
-//        driveMotorControl.FeedForward = 0;
-//        driveMotorControl.Slot = 0;
-//        driveMotorControl.EnableFOC = true;
-//        driveMotorControl.LimitForwardMotion = false;
-//        driveMotorControl.LimitReverseMotion = false;
-//        driveMotorControl.UseTimesync = false;
+        driveMotorControl = new VelocityVoltage(velocity);
+        driveMotorControl.UpdateFreqHz = 1000;
+        driveMotorControl.Acceleration = acceleration;
+        driveMotorControl.FeedForward = 0;
+        driveMotorControl.Slot = 0;
+        driveMotorControl.EnableFOC = true;
+        driveMotorControl.LimitForwardMotion = false;
+        driveMotorControl.LimitReverseMotion = false;
+        driveMotorControl.UseTimesync = false;
 //
-//        driveMotor.setControl(driveMotorControl);
+        driveMotor.setControl(driveMotorControl);
 
-        driveMotor.set(velocity/(DrivetrainConstants.MAX_RPM_FOC/60));
+//        driveMotor.set(velocity/(DrivetrainConstants.MAX_RPM_FOC/60));
 
 //        fTime = RobotController.getFPGATime();
 //        Logger.recordOutput("ReadPeriodicTime",(fTime-iTime)/1000000);

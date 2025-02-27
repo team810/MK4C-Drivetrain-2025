@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Current;
@@ -26,15 +27,17 @@ public class CoralTalonFX implements CoralIO {
     private final StatusSignal<Current> appliedCurrentSignal;
     private final StatusSignal<Current> supplyCurrentSignal;
 
-    private final CANrange sensor;
-    private final StatusSignal<Distance> laserDistance;
-    private final StatusSignal<Boolean> laserIsDetected;
+//    private final CANrange sensor;
+//    private final StatusSignal<Distance> laserDistance;
+//    private final StatusSignal<Boolean> laserIsDetected;
+
     private final DoubleSolenoid piston;
 
     public CoralTalonFX() {
         motor = new TalonFX(CoralConstants.MOTOR_ID, CoralConstants.CAN_BUS);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit = 40;
@@ -52,23 +55,25 @@ public class CoralTalonFX implements CoralIO {
         appliedCurrentSignal = motor.getStatorCurrent();
         temperaturesSignal = motor.getDeviceTemp();
 
-        sensor = new CANrange(CoralConstants.LASER_ID, CoralConstants.CAN_BUS);
-        laserDistance = sensor.getDistance();
-        laserIsDetected = sensor.getIsDetected();
+//        sensor = new CANrange(CoralConstants.LASER_ID, CoralConstants.CAN_BUS);
+//        laserDistance = sensor.getDistance();
+//        laserIsDetected = sensor.getIsDetected();
 
         piston = new DoubleSolenoid(
                 PneumaticsModuleType.CTREPCM,
                 CoralConstants.PISTON_FWD_CHANNEL,
                 CoralConstants.PISTON_REV_CHANNEL
         );
+
+
     }
 
     @Override
     public void readPeriodic() {
-        StatusSignal.refreshAll(laserDistance, laserIsDetected, appliedCurrentSignal, supplyCurrentSignal,temperaturesSignal,voltageSignal);
+//        StatusSignal.refreshAll(laserDistance, laserIsDetected, appliedCurrentSignal, supplyCurrentSignal,temperaturesSignal,voltageSignal);
         Logger.recordOutput("Coral/HasCoral", hasCoral());
-        Logger.recordOutput("Coral/RawDistance", laserDistance.getValue());
-        Logger.recordOutput("Coral/IsDetected", laserIsDetected.getValue());
+//        Logger.recordOutput("Coral/RawDistance", laserDistance.getValue());
+//        Logger.recordOutput("Coral/IsDetected", laserIsDetected.getValue());
 
         Logger.recordOutput("Coral/AppliedCurrent", appliedCurrentSignal.getValue());
         Logger.recordOutput("Coral/SupplyCurrent", supplyCurrentSignal.getValue());
@@ -81,7 +86,7 @@ public class CoralTalonFX implements CoralIO {
     public void setVoltage(Voltage voltage) {
         voltageControl.Output = voltage.in(Units.Volts);
         // FIXME disabled rn
-//        motor.setControl(voltageControl);
+        motor.setControl(voltageControl);
     }
 
     @Override
@@ -91,9 +96,7 @@ public class CoralTalonFX implements CoralIO {
 
     @Override
     public boolean hasCoral() {
-        if (laserIsDetected.getValue())
-            return false;
-        return laserDistance.getValue().in(Meters) < .8;
+        return false;
     }
 
     @Override

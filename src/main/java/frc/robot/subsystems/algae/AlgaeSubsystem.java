@@ -60,17 +60,17 @@ public class AlgaeSubsystem extends AdvancedSubsystem {
 
     @Override
     public void writePeriodic() {
-        if (AlgaeDriveStates.Off == driveState) {
-            if (hasAlgae()) {
-                setDriveState(AlgaeDriveStates.Hold);
-                setPivotState(AlgaePivotStates.Hold);
-            }
-        }else if (AlgaeDriveStates.Hold == driveState) {
-            if (!hasAlgae()) {
-                setDriveState(AlgaeDriveStates.Off);
-                setPivotState(AlgaePivotStates.Stored);
-            }
-        }
+//        if (AlgaeDriveStates.Off == driveState) {
+//            if (hasAlgae()) {
+//                setDriveState(AlgaeDriveStates.Hold);
+//                setPivotState(AlgaePivotStates.Hold);
+//            }
+//        }else if (AlgaeDriveStates.Hold == driveState) {
+//            if (!hasAlgae()) {
+//                setDriveState(AlgaeDriveStates.Off);
+//                setPivotState(AlgaePivotStates.Stored);
+//            }
+//        }
         io.writePeriodic();
     }
 
