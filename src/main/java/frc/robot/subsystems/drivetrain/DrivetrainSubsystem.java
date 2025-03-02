@@ -136,9 +136,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         if (Robot.isReal() && DrivetrainConstants.USING_VISION)
         {
             boolean reject = false;
-            if (cam == DrivetrainConstants.LIME_LIGHT_ALGAE) {
-                LimelightHelpers.SetRobotOrientation(cam, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
-            }
+
+            LimelightHelpers.SetRobotOrientation(cam, odometry.getEstimatedPosition().getRotation().getDegrees(), getRate().in(edu.wpi.first.units.Units.DegreesPerSecond),0, 0, 0, 0);
             LimelightHelpers.PoseEstimate results = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(cam);
 
             if (results != null) {
@@ -171,8 +170,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         backRight.readPeriodic(moduleObservations[3]);
 
 //        addVision(DrivetrainConstants.LIME_LIGHT_ALGAE);
-        addVision(DrivetrainConstants.LIME_LIGHT_CORAL);
-        addVision(DrivetrainConstants.LIME_LIGHT_SOURCE);
+//        addVision(DrivetrainConstants.LIME_LIGHT_CORAL);
+//        addVision(DrivetrainConstants.LIME_LIGHT_SOURCE);
 
         ArrayList<Observer.SwerveObservation> observations = observer.getObservations();
         for (int i = 0; i < observations.size(); i++) {
@@ -320,7 +319,7 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         }
         setImuMode(1);
         resetLLGyro();
-        setImuMode(2);
+        setImuMode(4);
     }
 
     public void switchAlliances() {

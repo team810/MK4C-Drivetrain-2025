@@ -47,13 +47,29 @@ public abstract class IO {
         controlsButtons.put(Controls.PositionTrough, () -> secondary.getPOV() == 270);
         controlsButtons.put(Controls.Store, secondary::getAButton);
         controlsButtons.put(Controls.ScoreCoral, () -> secondary.getPOV() == 90);
-
+//
         controlsButtons.put(Controls.AlgaeIntakeReefHigh, secondary::getLeftBumperButton);
         controlsButtons.put(Controls.AlgaeIntakeReefLow, secondary::getRightBumperButton);
         controlsButtons.put(Controls.AlgaeIntakeCoral, () -> secondary.getRightTriggerAxis() > .8);
         controlsButtons.put(Controls.AlgaeIntakeGround, () -> secondary.getLeftTriggerAxis() > .8);
         controlsButtons.put(Controls.Source, () -> secondary.getPOV() == 0);
         controlsButtons.put(Controls.ScoreAlgae, () -> secondary.getPOV() == 180);
+
+//        controlsButtons.put(Controls.PositionL4, secondary::getYButton);
+//        controlsButtons.put(Controls.PositionL3, secondary::getXButton);
+//        controlsButtons.put(Controls.PositionL2, secondary::getBButton);
+//        controlsButtons.put(Controls.PositionTrough, () -> secondary.getPOV() == 270);
+//        controlsButtons.put(Controls.ScoreCoral, () -> secondary.getPOV() == 90);
+//        controlsButtons.put(Controls.Store, () -> secondary.getRawButton(11));
+//
+//        controlsButtons.put(Controls.AlgaeIntakeReefHigh, () -> secondary.getRawAxis(1) == 1);
+//        controlsButtons.put(Controls.AlgaeIntakeReefLow, () -> secondary.getRawAxis(1) == -1);
+//        controlsButtons.put(Controls.AlgaeIntakeCoral, () -> secondary.getRawAxis(0) == 1 || secondary.getRawAxis(0) == -1);
+//        controlsButtons.put(Controls.AlgaeIntakeGround, () -> false);
+//        controlsButtons.put(Controls.BargePosition, () -> secondary.getRawButton(10));
+//        controlsButtons.put(Controls.ProcessorPosition, () -> secondary.getRawButton(9));
+//        controlsButtons.put(Controls.Source, () -> secondary.getPOV() == 0);
+//        controlsButtons.put(Controls.ScoreAlgae, () -> secondary.getRawButton(12));
 
 
     }

@@ -76,7 +76,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
         config.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
         if (Robot.isReal()) {
-            config.Slot0.kG = .93;
+            config.Slot0.kG = 1.1;
             config.Slot0.kS = 0;
             config.Slot0.kV = .125;
             config.Slot0.kA = 0.01;
@@ -223,9 +223,9 @@ public class ElevatorTalonFX implements ElevatorIO{
             control.Jerk = 500;
         }else{
             // Moving up
-            control.Velocity = 35;
+            control.Velocity = 40;
             control.Acceleration = 700;
-            control.Jerk = 6000;
+            control.Jerk = 8000;
         }
     }
 

@@ -61,6 +61,7 @@ public class KrakenNeoModule implements SwerveModuleIO{
             driveMotor = new TalonFX(DrivetrainConstants.getDriveID(id) + 10,DrivetrainConstants.CAN_BUS);
         }
         driveMotor.getConfigurator().apply(DrivetrainConstants.getDriveConfig(id));
+        driveMotor.setPosition(0);
         driveSimState = driveMotor.getSimState();
 
         driveMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(1),.000000000001,1),DCMotor.getKrakenX60Foc(1));

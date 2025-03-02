@@ -202,8 +202,8 @@ public class ManualDriveCommand extends Command {
             horizontalVelocity = horizontalVelocity * invert;
             verticalVelocity = verticalVelocity * invert;
 
-            horizontalVelocity = MathUtil.applyDeadband(horizontalVelocity, .1);
-            verticalVelocity = MathUtil.applyDeadband(verticalVelocity, .1);
+            horizontalVelocity = MathUtil.applyDeadband(horizontalVelocity, .06);
+            verticalVelocity = MathUtil.applyDeadband(verticalVelocity, .06);
 
             verticalVelocity = verticalVelocity * DrivetrainConstants.MAX_VELOCITY;
             horizontalVelocity = horizontalVelocity * DrivetrainConstants.MAX_VELOCITY;

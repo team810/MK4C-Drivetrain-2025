@@ -76,7 +76,7 @@ public class DrivetrainConstants {
     public static final boolean USING_VISION = false;
 
     public static final double DRIVETRAIN_LENGTH = Units.inchesToMeters(29.25);
-    public static final double DRIVETRAIN_WIDTH = Units.inchesToMeters(29.5);
+    public static final double DRIVETRAIN_WIDTH = Units.inchesToMeters(29.25);
 
     public static SwerveDriveKinematics getKinematics() {
         return new SwerveDriveKinematics(
@@ -219,9 +219,9 @@ public class DrivetrainConstants {
         config.MotionMagic = motionMagicConfigs;
 
         AudioConfigs audioConfig = new AudioConfigs();
-        audioConfig.BeepOnConfig = false;
+        audioConfig.BeepOnConfig = true;
         audioConfig.AllowMusicDurDisable = true;
-        audioConfig.BeepOnBoot = false;
+        audioConfig.BeepOnBoot = true;
         config.Audio = audioConfig;
 
         return config;

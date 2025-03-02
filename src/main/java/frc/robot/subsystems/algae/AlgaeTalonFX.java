@@ -182,7 +182,7 @@ public class AlgaeTalonFX implements AlgaeIO {
         Logger.recordOutput("Algae/Drive/Voltage", driveVoltageSignal.getValue());
         Logger.recordOutput("Algae/Drive/Current", driveAppliedCurrentSignal.getValue());
         Logger.recordOutput("Algae/Drive/SupplyCurrent", driveSupplyCurrentSignal.getValue());
-        Logger.recordOutput("Algae/Drive/Temperature", driveTemperatureSignal.getValue());
+        Logger.recordOutput("Algae/Drive/Temperature", driveTemperatureSignal.getValue().in(Celsius));
         Logger.recordOutput("Algae/Drive/AppliedVoltage", driveAppliedVoltage);
     }
 

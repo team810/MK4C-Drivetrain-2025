@@ -40,15 +40,15 @@ public class CoralTalonFX implements CoralIO {
         config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
-        config.CurrentLimits.SupplyCurrentLimit = 40;
-        config.CurrentLimits.StatorCurrentLimit = 40;
+        config.CurrentLimits.SupplyCurrentLimit = 50;
+        config.CurrentLimits.StatorCurrentLimit = 100;
         config.Voltage.PeakForwardVoltage = 12;
         config.Voltage.PeakReverseVoltage = -12;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motor.getConfigurator().apply(config);
 
         voltageControl = new VoltageOut(0);
-        voltageControl.EnableFOC = false;
+        voltageControl.EnableFOC = true;
 
         voltageSignal = motor.getMotorVoltage();
         supplyCurrentSignal = motor.getSupplyCurrent();
