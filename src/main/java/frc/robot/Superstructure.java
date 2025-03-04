@@ -141,8 +141,8 @@ public class Superstructure {
         Logger.recordOutput("SuperStructure/Alliance", alliance);
         Logger.recordOutput("SuperStructure/Pressure", pneumaticsControlModule.getPressure(0));
 
-        Pose3d secondStage = new Pose3d(0,0,ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) / 2, new Rotation3d());
-        Pose3d insideStage = new Pose3d(0,0, ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) / 3, new Rotation3d());
+        Pose3d secondStage = new Pose3d(0,0,ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) * .33, new Rotation3d());
+        Pose3d insideStage = new Pose3d(0,0, ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters) * .66, new Rotation3d());
 
         Pose3d carriage = new Pose3d(0, .1, (ElevatorSubsystem.getInstance().getCurrentHeight().in(Meters)) + .18,new Rotation3d());
         Pose3d algae = new Pose3d(0, .2,carriage.getZ() + .17,new Rotation3d(Math.toRadians(-63) + AlgaeSubsystem.getInstance().currentPivotAngle(),0,0));

@@ -170,8 +170,8 @@ public class DrivetrainSubsystem extends AdvancedSubsystem {
         backRight.readPeriodic(moduleObservations[3]);
 
 //        addVision(DrivetrainConstants.LIME_LIGHT_ALGAE);
-//        addVision(DrivetrainConstants.LIME_LIGHT_CORAL);
-//        addVision(DrivetrainConstants.LIME_LIGHT_SOURCE);
+        addVision(DrivetrainConstants.LIME_LIGHT_CORAL);
+        addVision(DrivetrainConstants.LIME_LIGHT_SOURCE);
 
         ArrayList<Observer.SwerveObservation> observations = observer.getObservations();
         for (int i = 0; i < observations.size(); i++) {

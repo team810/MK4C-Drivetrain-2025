@@ -73,7 +73,7 @@ public class DrivetrainConstants {
     public static final String LIME_LIGHT_SOURCE = "limelight-source";
     public static final String LIME_LIGHT_ALGAE = "limelight-algae";
     public static final String LIME_LIGHT_CORAL = "limelight-coral";
-    public static final boolean USING_VISION = false;
+    public static final boolean USING_VISION = true;
 
     public static final double DRIVETRAIN_LENGTH = Units.inchesToMeters(29.25);
     public static final double DRIVETRAIN_WIDTH = Units.inchesToMeters(29.25);
@@ -156,7 +156,7 @@ public class DrivetrainConstants {
         currentLimitConfig.StatorCurrentLimitEnable = true;
         currentLimitConfig.SupplyCurrentLimitEnable = true;
         currentLimitConfig.StatorCurrentLimit = 40;
-        currentLimitConfig.SupplyCurrentLimit = 40;
+        currentLimitConfig.SupplyCurrentLimit = 60;
         config.CurrentLimits = currentLimitConfig;
 
         VoltageConfigs voltageConfigs = new VoltageConfigs();

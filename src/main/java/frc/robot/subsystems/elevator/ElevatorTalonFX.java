@@ -89,7 +89,9 @@ public class ElevatorTalonFX implements ElevatorIO{
             config.MotionMagic.MotionMagicJerk = 1000;
         }else{
             config.Slot0.kG = .5;
-            config.Slot0.kP = 2;
+            config.Slot0.kV = .125;
+            config.Slot0.kA = 0.01;
+            config.Slot0.kP = 1;
             config.Slot0.kI = 0;
             config.Slot0.kD = 0;
 
@@ -132,7 +134,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         elevatorSim = new ElevatorSim(
                 DCMotor.getKrakenX60Foc(2),
                 6,
-                Pounds.of(25).in(Kilograms),
+                Pounds.of(15).in(Kilograms),
                 ElevatorConstants.DRUM_RADIUS.in(Meters),
                 0,// Min height
                 ElevatorConstants.ELEVATOR_MAX_HEIGHT.in(Meters),
@@ -167,7 +169,7 @@ public class ElevatorTalonFX implements ElevatorIO{
         Logger.recordOutput("Elevator/CurrentHeightInches", currentHeight.in(Inches));
         Logger.recordOutput("Elevator/TargetHeightInches", targetHeight.in(Rotations));
         Logger.recordOutput("Elevator/AtTargetHeight", atSetpoint());
-        Logger.recordOutput("Elevator/Velocity", velocitySignal.getValue());
+        Logger.recordOutput("Elevator/Velocity", velocitySignal.getValue().in(RotationsPerSecond));
         Logger.recordOutput("Elevator/Acceleration", accelerationSignal.getValue().in(RotationsPerSecondPerSecond));
 
         Logger.recordOutput("Elevator/TargetRaw", control.Position);
@@ -176,11 +178,11 @@ public class ElevatorTalonFX implements ElevatorIO{
         Logger.recordOutput("Elevator/Leader/Voltage", leaderAppliedVoltageSignal.getValue());
         Logger.recordOutput("Elevator/Leader/AppliedCurrent", leaderAppliedCurrentSignal.getValue().in(Units.Amps));
         Logger.recordOutput("Elevator/Leader/SupplyCurrent", leaderSupplyCurrentSignal.getValue().in(Amps));
-        Logger.recordOutput("Elevator/Leader/Temperature",leaderTempSignal.getValue().in(Units.Fahrenheit));
+        Logger.recordOutput("Elevator/Leader/Temperature",leaderTempSignal.getValue().in(Celsius));
 
         Logger.recordOutput("Elevator/Follower/Voltage", followerAppliedVoltageSignal.getValue().in(Units.Volts));
         Logger.recordOutput("Elevator/Follower/Current", followerCurrentSignal.getValue().in(Units.Amps));
-        Logger.recordOutput("Elevator/Follower/Temperature",followerTempSignal.getValue().in(Units.Fahrenheit));
+        Logger.recordOutput("Elevator/Follower/Temperature",followerTempSignal.getValue().in(Celsius));
     }
 
     @Override
@@ -203,8 +205,8 @@ public class ElevatorTalonFX implements ElevatorIO{
         double velocityIn = edu.wpi.first.math.util.Units.metersToInches(elevatorSim.getVelocityMetersPerSecond());
         leaderSim = leader.getSimState();
         leaderSim.setSupplyVoltage(12);
-        leaderSim.setRawRotorPosition(heightIn / ElevatorConstants.CONVERSION_FACTOR);
-        leaderSim.setRotorVelocity(velocityIn/ ElevatorConstants.CONVERSION_FACTOR);
+        leaderSim.setRawRotorPosition(heightIn / 1.09);
+        leaderSim.setRotorVelocity(velocityIn/ 1.09);
         followerSim = follower.getSimState();
         followerSim.setSupplyVoltage(12);
         followerSim.setRawRotorPosition(heightIn / ElevatorConstants.CONVERSION_FACTOR);

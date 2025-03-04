@@ -57,7 +57,7 @@ public class AlgaeTalonFX implements AlgaeIO {
 
         pivotMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-        pivotMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        pivotMotorConfig.CurrentLimits.SupplyCurrentLimit = 20;
         pivotMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         pivotMotorConfig.CurrentLimits.StatorCurrentLimit = 80;
         pivotMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -143,8 +143,8 @@ public class AlgaeTalonFX implements AlgaeIO {
         laser = new CANrange(AlgaeConstants.LASER_ID, AlgaeConstants.CANBUS);
         CANrangeConfiguration laserConfig = new CANrangeConfiguration();
         laserConfig.ToFParams.UpdateMode = UpdateModeValue.ShortRange100Hz;
-        laserConfig.FovParams.FOVRangeX = 7;
-        laserConfig.FovParams.FOVRangeY = 7;
+        laserConfig.FovParams.FOVRangeX = 6.75;
+        laserConfig.FovParams.FOVRangeY = 6.75;
         laserConfig.FutureProofConfigs = true;
         laser.getConfigurator().apply(laserConfig);
         distanceSignal = laser.getDistance();
