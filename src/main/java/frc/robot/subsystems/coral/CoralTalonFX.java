@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import org.littletonrobotics.junction.Logger;
 
+import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.Meters;
 
 public class CoralTalonFX implements CoralIO {
@@ -77,7 +78,7 @@ public class CoralTalonFX implements CoralIO {
 
         Logger.recordOutput("Coral/AppliedCurrent", appliedCurrentSignal.getValue());
         Logger.recordOutput("Coral/SupplyCurrent", supplyCurrentSignal.getValue());
-        Logger.recordOutput("Coral/MotorTemperatures", temperaturesSignal.getValue());
+        Logger.recordOutput("Coral/MotorTemperatures", temperaturesSignal.getValue().in(Celsius));
         Logger.recordOutput("Coral/MotorVoltage", voltageSignal.getValue());
     }
 

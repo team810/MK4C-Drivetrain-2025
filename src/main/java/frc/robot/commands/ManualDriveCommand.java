@@ -84,8 +84,8 @@ public class ManualDriveCommand extends Command {
     private double invert = 1;
 
     public ManualDriveCommand() {
-        xLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION); // Fix to match the actual constants of the drivetrain
-        yLimiter = new SlewRateLimiter(DrivetrainConstants.MAX_THEORETICAL_ACCELERATION);
+        xLimiter = new SlewRateLimiter(20);
+        yLimiter = new SlewRateLimiter(20);
 
         velocityLimiter = new SlewRateLimiter(8);
 
@@ -192,7 +192,7 @@ public class ManualDriveCommand extends Command {
         boolean rightSourceB = rightSource.getAsBoolean();
 
         if (!(left || right || leftSourceB || rightSourceB)) {
-
+            // Manual drive
             double verticalVelocity;
             double horizontalVelocity;
 
@@ -226,13 +226,15 @@ public class ManualDriveCommand extends Command {
 
                 DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityThetaControlFOC);
                 DrivetrainSubsystem.getInstance().setVelocityThetaControlFOC(horizontalVelocity,verticalVelocity, lockedHeading,true);
+//                DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
+//                DrivetrainSubsystem.getInstance().setVelocityFOC(new ChassisSpeeds(horizontalVelocity,verticalVelocity,0));
             }else{
                 omegaVelocity = omegaVelocity * DrivetrainConstants.MAX_ANGULAR_VELOCITY;
 
                 verticalVelocity = xLimiter.calculate(verticalVelocity);
                 horizontalVelocity = yLimiter.calculate(horizontalVelocity);
                 ChassisSpeeds targetSpeeds = new ChassisSpeeds(horizontalVelocity, verticalVelocity, omegaVelocity);
-                targetSpeeds = limitSpeeds(targetSpeeds);
+//                targetSpeeds = limitSpeeds(targetSpeeds);
 
                 DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
                 DrivetrainSubsystem.getInstance().setVelocityFOC(targetSpeeds);
@@ -243,7 +245,7 @@ public class ManualDriveCommand extends Command {
             DrivetrainSubsystem.getInstance().setPositionalControl(false);
 
         } else if (left || right) {
-
+            //
             Pose2d currentPose = DrivetrainSubsystem.getInstance().getPose();
             if (!alignLastTick) {
                 targetPose = currentPose.nearest(reefSections);
@@ -298,7 +300,7 @@ public class ManualDriveCommand extends Command {
             DrivetrainSubsystem.getInstance().setPositionalControl(true);
 
             ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, omegaOutput);
-            speeds = limitSpeeds(speeds);
+//            speeds = limitSpeeds(speeds);
 
             DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
             DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);
@@ -321,7 +323,7 @@ public class ManualDriveCommand extends Command {
             DrivetrainSubsystem.getInstance().setPositionalControl(true);
 
             ChassisSpeeds speeds = new ChassisSpeeds(xOutput, yOutput, omegaOutput);
-            speeds = limitSpeeds(speeds);
+//            speeds = limitSpeeds(speeds);
 
             DrivetrainSubsystem.getInstance().setVelocityFOC(speeds);
             DrivetrainSubsystem.getInstance().setControlMode(DrivetrainSubsystem.ControlMethods.VelocityFOC);

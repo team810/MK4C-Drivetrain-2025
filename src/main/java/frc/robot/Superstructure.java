@@ -97,11 +97,11 @@ public class Superstructure {
 
         }));
 
-//        new Trigger(IO.getButtonValue(Controls.BargePosition)).onTrue(new InstantCommand(() -> {
-//            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.Barge);
-//            AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Barge);
-//            AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Hold);
-//        }));
+        new Trigger(IO.getButtonValue(Controls.BargePosition)).onTrue(new InstantCommand(() -> {
+            ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.Barge);
+            AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Barge);
+            AlgaeSubsystem.getInstance().setDriveState(AlgaeDriveStates.Hold);
+        }));
         new Trigger(IO.getButtonValue(Controls.Source)).whileTrue(new SourceIntake());
 
         new Trigger(IO.getButtonValue(Controls.ScoreAlgae)).whileTrue(
@@ -111,12 +111,12 @@ public class Superstructure {
                 )
         );
 
-//        new Trigger(IO.getButtonValue(Controls.ProcessorPosition)).onTrue(
-//                new InstantCommand(() -> {
-//                    ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.Processor);
-//                    AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Processor);
-//                }
-//        ));
+        new Trigger(IO.getButtonValue(Controls.ProcessorPosition)).onTrue(
+                new InstantCommand(() -> {
+                    ElevatorSubsystem.getInstance().setElevatorState(ElevatorState.Processor);
+                    AlgaeSubsystem.getInstance().setPivotState(AlgaePivotStates.Processor);
+                }
+        ));
 
         new Trigger(IO.getButtonValue(Controls.ScoreCoral)).whileTrue(
                 new StartEndCommand(

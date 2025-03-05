@@ -44,7 +44,7 @@ public class DrivetrainConstants {
     public static final double WHEEL_BASE_WIDTH = Units.inchesToMeters(24); // measure of FL wheel to FR wheel or BL wheel to BR wheel
     public static final double WHEEL_BASE_LENGTH = Units.inchesToMeters(24); // measure of FL wheel to BL wheel// or FR wheel to BR wheel
 
-    public static final double STEER_KP = 4; // voltage/radians proportion of volts to error in radians
+    public static final double STEER_KP = 4.5; // voltage/radians proportion of volts to error in radians
     public static final double STEER_KI = 0;
     public static final double STEER_KD = 0;
 
@@ -59,10 +59,10 @@ public class DrivetrainConstants {
     public static final double WHEEL_DIAMETER_INCHES = 4.0;
     public static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(WHEEL_DIAMETER_INCHES);
 
-    public static final double MASS = Units.lbsToKilograms(50); // Robot Mass kg
+    public static final double MASS = Units.lbsToKilograms(135); // Robot Mass kg
     public static final double COEFFICIENT_OF_FRICTION = 1; //
     public static final double MAX_TRACTION = (MASS * 9.8) * COEFFICIENT_OF_FRICTION; // Fn * Mu = Max traction in Newtons
-    public static final double MAX_THEORETICAL_ACCELERATION = MAX_TRACTION / MASS; // m/s^2 f=ma f/m = a
+    public static final double MAX_THEORETICAL_ACCELERATION = 15; // m/s^2 f=ma f/m = a
     // 5.761
     public static final double MAX_VELOCITY = ((MAX_RPM_FOC / 60)/DRIVE_GEAR_RATIO) * (WHEEL_DIAMETER_METERS * Math.PI); // Meters per second
 
@@ -72,7 +72,7 @@ public class DrivetrainConstants {
     public static final double MAX_ANGULAR_VELOCITY_ACCEPT_VISION_DATA = 2 * Math.PI; // 1 rotation per second
     public static final String LIME_LIGHT_SOURCE = "limelight-source";
     public static final String LIME_LIGHT_ALGAE = "limelight-algae";
-    public static final String LIME_LIGHT_CORAL = "limelight-coral";
+    public static final String LIME_LIGHT_CORAL = "limelight-reef";
     public static final boolean USING_VISION = true;
 
     public static final double DRIVETRAIN_LENGTH = Units.inchesToMeters(29.25);
@@ -156,7 +156,7 @@ public class DrivetrainConstants {
         currentLimitConfig.StatorCurrentLimitEnable = true;
         currentLimitConfig.SupplyCurrentLimitEnable = true;
         currentLimitConfig.StatorCurrentLimit = 40;
-        currentLimitConfig.SupplyCurrentLimit = 60;
+        currentLimitConfig.SupplyCurrentLimit = 100;
         config.CurrentLimits = currentLimitConfig;
 
         VoltageConfigs voltageConfigs = new VoltageConfigs();

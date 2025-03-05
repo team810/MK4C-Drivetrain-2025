@@ -7,8 +7,8 @@ public class FieldConstants {
 
     public static class BlueReef {
         public static final Pose2d F = new Pose2d(3.2094268798828125,4.015262603759766, new Rotation2d(0));
-        public static final Pose2d F_LEFT = new Pose2d(3.1362314224243164,4.181371688842773, new Rotation2d(0));
-        public static final Pose2d F_RIGHT = new Pose2d(3.1279850006103516 , 3.8670740127563477 , new Rotation2d(0));
+        public static final Pose2d F_LEFT = new Pose2d(3.2,4, new Rotation2d(0));
+        public static final Pose2d F_RIGHT = new Pose2d(3.2 , 3.67 , new Rotation2d(0));
 
         public static final Pose2d FL = new Pose2d(3.8588666915893555,5.132298946380615 , Rotation2d.fromDegrees(-60));
         public static final Pose2d FL_LEFT = new Pose2d(3.940119504928589 ,5.277029514312744, Rotation2d.fromDegrees(-60));
@@ -23,14 +23,14 @@ public class FieldConstants {
         public static final Pose2d B_RIGHT = new Pose2d(5.863711833953857 , 3.8693346977233887 , new Rotation2d(3.14));
 
         public static final Pose2d BR = new Pose2d(5.1501264572143555,2.921952247619629, Rotation2d.fromDegrees(120));
-        public static final Pose2d BR_LEFT = new Pose2d(5.317232608795166 ,2.9266579151153564 , Rotation2d.fromDegrees(120));
-        public static final Pose2d BR_RIGHT = new Pose2d(5.030331134796143 ,2.755882978439331  , Rotation2d.fromDegrees(120));
+        public static final Pose2d BR_LEFT = new Pose2d(5.19 ,2.92 , Rotation2d.fromDegrees(120));
+        public static final Pose2d BR_RIGHT = new Pose2d(5.48 ,3.11  , Rotation2d.fromDegrees(120));
 
         public static final Pose2d FR = new Pose2d(3.8382577896118164, 2.921952247619629, Rotation2d.fromDegrees(60));
-        public static final Pose2d FR_RIGHT = new Pose2d(3.9510343074798584 , 2.7422211170196533 , Rotation2d.fromDegrees(60));
-        public static final Pose2d FR_LEFT = new Pose2d(3.664132595062256 , 2.878840923309326 , Rotation2d.fromDegrees(60));
+        public static final Pose2d FR_RIGHT = new Pose2d(4.16 , 2.72, Rotation2d.fromDegrees(60));
+        public static final Pose2d FR_LEFT = new Pose2d(3.88 ,2.87 , Rotation2d.fromDegrees(60));
 
-        public static final Pose2d LEFT_SOURCE = new Pose2d(1.6, 7.3, new Rotation2d(2.223));
+        public static final Pose2d LEFT_SOURCE = new Pose2d(1.24, 7.03, new Rotation2d(2.223));
         public static final Pose2d RIGHT_SOURCE = new Pose2d(1.6, .719, new Rotation2d(-2.223));
     }
     public static class RedReef {
